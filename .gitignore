@@ -7,6 +7,31 @@
 build/
 *.lock
 
+# Node.js
+functions/node_modules/
+functions/package-lock.json
+
+# Dart Generated
+dataconnect-generated/
+
+# IDEs
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Firebase & Credenciais
+google-services.json
+GoogleService-Info.plist
+*.keystore
+*.pem
+serviceAccountKey.json
+
 # iOS
 ios/Pods/
 ios/.symlinks/
@@ -18,21 +43,6 @@ ios/Flutter/Flutter.podspec
 # Android
 android/.gradle/
 android/app/build/
-*.iml
 
-# Firebase & Credenciais
-google-services.json        # Android Firebase config
-GoogleService-Info.plist    # iOS Firebase config
-*.keystore                  # Android keystore
-*.pem                       # Certificados
-serviceAccountKey.json      # Chaves privadas Firebase Admin SDK
-
-# VSCode/IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Sistema
-.DS_Store
-Thumbs.db
+# Outros arquivos sensíveis
+.env

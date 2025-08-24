@@ -1,0 +1,29 @@
+mutation CreateTeam($name: String!, $leagueId: UUID!) @auth(level: USER) {
+  team_insert(data: { name: $name, leagueId: $leagueId })
+}
+
+query ListPlayersByTeam($teamId: UUID!) @auth(level: USER) {
+  players(where: { teamId: { eq: $teamId } }) {
+    id
+    displayName
+    position
+  }
+}
+
+mutation UpdateMatchScore($matchId: UUID!, $homeScore: Int!, $awayScore: Int!) @auth(level: USER) {
+  match_update(key: { id: $matchId }, data: { homeScore: $homeScore, awayScore: $awayScore })
+}
+
+query ListMatchesByDate($matchDate: Date!) @auth(level: USER) {
+  matches(where: { matchDate: { eq: $matchDate } }) {
+    id
+    homeTeam {
+      name
+    }
+    awayTeam {
+      name
+    }
+    homeScore
+    awayScore
+  }
+}

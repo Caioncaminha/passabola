@@ -34,70 +34,41 @@ A proposta é fornecer uma plataforma digital que dê **visibilidade às atletas
 ## 📂 Estrutura de Pastas (Flutter)
 
 ```
-passa_a_bola/
+passabola/
+├── lib/                        # Código principal Flutter/Dart
+│   ├── core/                   # Utilitários, rotas, helpers globais
+│   ├── models/                 # Modelos de dados
+│   ├── providers/              # Gerenciamento de estado
+│   ├── screens/                # Telas/views organizadas por domínio
+│   ├── services/               # Serviços (API, Auth, Firestore, etc)
+│   └── widgets/                # Componentes reutilizáveis
 │
-├── android/                     # Configurações nativas Android
-├── ios/                         # Configurações nativas iOS
-├── web/                         # Suporte para versão web (opcional)
-├── test/                        # Testes unitários e widget tests
+├── functions/                  # Backend Node.js (Firebase Functions)
+│   ├── src/                    # Código fonte das funções
+│   ├── tests/                  # Testes das funções
+│   ├── package.json
+│   └── .eslintrc.js
 │
-├── assets/                      # Recursos estáticos
-│   ├── images/                  # Logos, ícones, fotos
-│   ├── icons/                   # Ícones customizados
-│   └── fonts/                   # Fontes personalizadas
+├── dataconnect/                # Configurações GraphQL, seeds, schemas
+│   ├── schema/                 # Schemas GraphQL
+│   ├── example/                # Exemplos de uso
+│   └── seed_data.gql           # Dados de seed
 │
-├── lib/                         # Código principal do app
-│   ├── main.dart                 # Ponto de entrada do app
-│   │
-│   ├── core/                     # Configurações centrais
-│   │   ├── constants/            # Constantes globais (cores, textos fixos)
-│   │   ├── themes/               # Temas (light, dark, estilos visuais)
-│   │   ├── utils/                # Funções auxiliares (formatadores, validadores)
-│   │   └── routes.dart           # Definição das rotas de navegação
-│   │
-│   ├── models/                   # Modelos de dados (Usuario, Atleta, Clube, Partida)
-│   │   └── atleta.dart
-│   │
-│   ├── services/                 # Serviços (Firebase, APIs, autenticação)
-│   │   ├── auth_service.dart
-│   │   ├── firestore_service.dart
-│   │   └── notification_service.dart
-│   │
-│   ├── repositories/             # Camada de acesso a dados
-│   │   ├── usuario_repository.dart
-│   │   ├── atleta_repository.dart
-│   │   └── clube_repository.dart
-│   │
-│   ├── controllers/              # Controladores (estado do app / lógica)
-│   │   ├── auth_controller.dart
-│   │   └── atleta_controller.dart
-│   │
-│   ├── screens/                  # Telas do aplicativo
-│   │   ├── auth/                 # Telas de login e cadastro
-│   │   │   ├── login_screen.dart
-│   │   │   └── register_screen.dart
-│   │   ├── home/                 # Tela inicial
-│   │   │   └── home_screen.dart
-│   │   ├── atleta/               # Perfil de atletas
-│   │   │   └── atleta_screen.dart
-│   │   ├── clube/                # Perfil de clubes
-│   │   │   └── clube_screen.dart
-│   │   ├── partida/              # Estatísticas de partidas
-│   │   │   └── partida_screen.dart
-│   │   └── settings/             # Configurações
-│   │       └── settings_screen.dart
-│   │
-│   ├── widgets/                  # Componentes reutilizáveis
-│   │   ├── custom_button.dart
-│   │   ├── custom_card.dart
-│   │   └── input_field.dart
-│   │
-│   └── providers/                # Gerência de estado (Provider, Riverpod, Bloc)
-│       └── app_state.dart
+├── dataconnect-generated/      # Código gerado automaticamente
+│   └── dart/                   # Código gerado para Dart
 │
-├── pubspec.yaml                  # Configurações do Flutter (dependências, assets, fonts)
-├── analysis_options.yaml          # Regras de lint e boas práticas
-└── README.md                     # Documentação do projeto
+├── public/                     # Arquivos estáticos (web)
+│   └── index.html
+│
+├── android/                    # Projeto Android nativo
+├── ios/                        # Projeto iOS nativo
+├── test/                       # Testes unitários Flutter/Dart
+├── .gitignore
+├── pubspec.yaml
+├── README.md
+├── firestore.rules
+├── firestore.indexes.json
+├── analysis_options.yaml
 
 
 ```

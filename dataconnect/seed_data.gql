@@ -1,0 +1,56 @@
+mutation SeedDatabase @auth(level: USER) {
+  league_insertMany(data: [
+    {
+      name: "Example League",
+      season: "2024",
+      startDate: "2024-01-01",
+      endDate: "2024-12-31",
+      description: "A sample league for testing."
+    }
+  ])
+  team_insertMany(data: [
+    {
+      name: "Example Team 1",
+      leagueId: "00000000-0000-0000-0000-000000000000" # Replace with a valid League ID
+    },
+    {
+      name: "Example Team 2",
+      leagueId: "00000000-0000-0000-0000-000000000000" # Replace with a valid League ID
+    }
+  ])
+  user_insertMany(data: [
+    {
+      displayName: "John Doe",
+      email: "john.doe@example.com",
+      role: "Admin"
+    }
+  ])
+  player_insertMany(data: [
+    {
+      displayName: "Player One",
+      teamId: "00000000-0000-0000-0000-000000000000", # Replace with a valid Team ID
+      position: "Forward",
+      jerseyNumber: 10
+    }
+  ])
+  match_insertMany(data: [
+    {
+      homeTeamId: "00000000-0000-0000-0000-000000000000", # Replace with a valid Team ID
+      awayTeamId: "00000000-0000-0000-0000-000000000000", # Replace with a valid Team ID
+      homeScore: 2,
+      awayScore: 1,
+      matchDate: "2024-07-15"
+    }
+  ])
+  playerMatchStat_insertMany(data: [
+    {
+      playerId: "00000000-0000-0000-0000-000000000000", # Replace with a valid Player ID
+      matchId: "00000000-0000-0000-0000-000000000000", # Replace with a valid Match ID
+      goals: 1,
+      assists: 1,
+      minutesPlayed: 90,
+      passes: 50,
+      shots: 5
+    }
+  ])
+}

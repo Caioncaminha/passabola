@@ -1,0 +1,63 @@
+type User @table {
+  displayName: String!
+  email: String!
+  role: String!
+  createdAt: Timestamp!
+  photoUrl: String
+  team: Team
+}
+
+type Team @table {
+  name: String!
+  league: League!
+  createdAt: Timestamp!
+  coach: User
+  logoUrl: String
+}
+
+type Player @table {
+  displayName: String!
+  team: Team!
+  jerseyNumber: Int!
+  position: String!
+  createdAt: Timestamp!
+  dateOfBirth: Date
+  height: Float
+  weight: Float
+  injuryStatus: Boolean
+}
+
+type Match @table {
+  homeTeam: Team!
+  awayTeam: Team!
+  matchDate: Date!
+  homeScore: Int!
+  awayScore: Int!
+  createdAt: Timestamp!
+  location: String
+  notes: String
+}
+
+type PlayerMatchStat @table {
+  player: Player!
+  match: Match!
+  goals: Int!
+  assists: Int!
+  minutesPlayed: Int!
+  shots: Int!
+  passes: Int!
+  createdAt: Timestamp!
+  saves: Int
+  tackles: Int
+  yellowCards: Int
+  redCards: Int
+}
+
+type League @table {
+  name: String!
+  season: String!
+  createdAt: Timestamp!
+  description: String
+  startDate: Date
+  endDate: Date
+}
