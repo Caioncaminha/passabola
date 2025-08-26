@@ -3,6 +3,7 @@ import 'jogadoras_page.dart';
 import 'perfil_page.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
+import '../data/constants.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -16,9 +17,9 @@ class _MainPageState extends State<MainPage> {
 
   static const List<Widget> _pages = <Widget>[
     JogadorasPage(), // Índice 0
-    Center(child: Text('Página de Eventos')), // Índice 1 (Placeholder)
-    Center(child: Text('Página de Jogos')), // Índice 2 (Placeholder)
-    Center(child: Text('Página de Notícias')), // Índice 3 (Placeholder)
+    Center(child: Text('Página de Eventos', style: KTextStyle.titleText)), // Índice 1 (Placeholder)
+    Center(child: Text('Página de Jogos', style: KTextStyle.titleText)), // Índice 2 (Placeholder)
+    Center(child: Text('Página de Notícias', style: KTextStyle.titleText)), // Índice 3 (Placeholder)
     PerfilPage(), // Índice 4
   ];
 
