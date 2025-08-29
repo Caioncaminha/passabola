@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'jogadoras_page.dart';
-import 'perfil_page.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
-
+import 'home_page.dart';
+import 'perfil_page.dart';
+import 'jogadoras_page.dart';
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
 
@@ -12,13 +12,14 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  int _selectedIndex = 0; // Começa na primeira página (Índice 0)
+  int _selectedIndex = 0;
 
+  // Lista de todas as páginas principais do app
   static const List<Widget> _pages = <Widget>[
-    JogadorasPage(), // Índice 0
-    Center(child: Text('Página de Eventos')), // Índice 1 (Placeholder)
-    Center(child: Text('Página de Jogos')), // Índice 2 (Placeholder)
-    Center(child: Text('Página de Notícias')), // Índice 3 (Placeholder)
+    HomePage(), // Índice 0
+    JogadorasPage(), // Índice 1
+    Center(child: Text('Página de Jogos')), // Índice 2
+    Center(child: Text('Página de Notícias')), // Índice 3
     PerfilPage(), // Índice 4
   ];
 
