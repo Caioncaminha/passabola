@@ -4,16 +4,26 @@ class ListPlayersByTeamVariablesBuilder {
   String teamId;
 
   final FirebaseDataConnect _dataConnect;
-  ListPlayersByTeamVariablesBuilder(this._dataConnect, {required  this.teamId,});
-  Deserializer<ListPlayersByTeamData> dataDeserializer = (dynamic json)  => ListPlayersByTeamData.fromJson(jsonDecode(json));
-  Serializer<ListPlayersByTeamVariables> varsSerializer = (ListPlayersByTeamVariables vars) => jsonEncode(vars.toJson());
-  Future<QueryResult<ListPlayersByTeamData, ListPlayersByTeamVariables>> execute() {
+  ListPlayersByTeamVariablesBuilder(this._dataConnect, {required this.teamId});
+  Deserializer<ListPlayersByTeamData> dataDeserializer = (dynamic json) =>
+      ListPlayersByTeamData.fromJson(jsonDecode(json));
+  Serializer<ListPlayersByTeamVariables> varsSerializer =
+      (ListPlayersByTeamVariables vars) => jsonEncode(vars.toJson());
+  Future<QueryResult<ListPlayersByTeamData, ListPlayersByTeamVariables>>
+  execute() {
     return ref().execute();
   }
 
   QueryRef<ListPlayersByTeamData, ListPlayersByTeamVariables> ref() {
-    ListPlayersByTeamVariables vars= ListPlayersByTeamVariables(teamId: teamId,);
-    return _dataConnect.query("ListPlayersByTeam", dataDeserializer, varsSerializer, vars);
+    ListPlayersByTeamVariables vars = ListPlayersByTeamVariables(
+      teamId: teamId,
+    );
+    return _dataConnect.query(
+      "ListPlayersByTeam",
+      dataDeserializer,
+      varsSerializer,
+      vars,
+    );
   }
 }
 
@@ -21,17 +31,16 @@ class ListPlayersByTeamPlayers {
   String id;
   String displayName;
   String position;
-  ListPlayersByTeamPlayers.fromJson(dynamic json):
-  
-  id = nativeFromJson<String>(json['id']),
-  displayName = nativeFromJson<String>(json['displayName']),
-  position = nativeFromJson<String>(json['position']);
+  ListPlayersByTeamPlayers.fromJson(dynamic json)
+    : id = json['id'] as String,
+      displayName = json['displayName'] as String,
+      position = json['position'] as String;
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
-    json['id'] = nativeToJson<String>(id);
-    json['displayName'] = nativeToJson<String>(displayName);
-    json['position'] = nativeToJson<String>(position);
+    json['id'] = id;
+    json['displayName'] = displayName;
+    json['position'] = position;
     return json;
   }
 
@@ -44,11 +53,10 @@ class ListPlayersByTeamPlayers {
 
 class ListPlayersByTeamData {
   List<ListPlayersByTeamPlayers> players;
-  ListPlayersByTeamData.fromJson(dynamic json):
-  
-  players = (json['players'] as List<dynamic>)
-        .map((e) => ListPlayersByTeamPlayers.fromJson(e))
-        .toList();
+  ListPlayersByTeamData.fromJson(dynamic json)
+    : players = (json['players'] as List<dynamic>)
+          .map((e) => ListPlayersByTeamPlayers.fromJson(e))
+          .toList();
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
@@ -56,26 +64,22 @@ class ListPlayersByTeamData {
     return json;
   }
 
-  ListPlayersByTeamData({
-    required this.players,
-  });
+  ListPlayersByTeamData({required this.players});
 }
 
 class ListPlayersByTeamVariables {
   String teamId;
-  @Deprecated('fromJson is deprecated for Variable classes as they are no longer required for deserialization.')
-  ListPlayersByTeamVariables.fromJson(Map<String, dynamic> json):
-  
-  teamId = nativeFromJson<String>(json['teamId']);
+  @Deprecated(
+    'fromJson is deprecated for Variable classes as they are no longer required for deserialization.',
+  )
+  ListPlayersByTeamVariables.fromJson(Map<String, dynamic> json)
+    : teamId = json['teamId'] as String;
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
-    json['teamId'] = nativeToJson<String>(teamId);
+    json['teamId'] = teamId;
     return json;
   }
 
-  ListPlayersByTeamVariables({
-    required this.teamId,
-  });
+  ListPlayersByTeamVariables({required this.teamId});
 }
-

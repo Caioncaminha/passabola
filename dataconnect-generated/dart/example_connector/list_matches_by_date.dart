@@ -3,7 +3,7 @@ part of 'example.dart';
 class ListMatchesByDateVariablesBuilder {
   DateTime matchDate;
 
-  final ExampleDataConnect _dataConnect;
+  final FirebaseDataConnect _dataConnect;
   ListMatchesByDateVariablesBuilder(
     this._dataConnect, {
     required this.matchDate,
@@ -42,19 +42,19 @@ class ListMatchesByDateMatches {
   int homeScore;
   int awayScore;
   ListMatchesByDateMatches.fromJson(dynamic json)
-    : id = nativeFromJson<String>(json['id']),
+    : id = json['id'] as String,
       homeTeam = ListMatchesByDateMatchesHomeTeam.fromJson(json['homeTeam']),
       awayTeam = ListMatchesByDateMatchesAwayTeam.fromJson(json['awayTeam']),
-      homeScore = nativeFromJson<int>(json['homeScore']),
-      awayScore = nativeFromJson<int>(json['awayScore']);
+      homeScore = json['homeScore'] as int,
+      awayScore = json['awayScore'] as int;
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
-    json['id'] = nativeToJson<String>(id);
+    json['id'] = id;
     json['homeTeam'] = homeTeam.toJson();
     json['awayTeam'] = awayTeam.toJson();
-    json['homeScore'] = nativeToJson<int>(homeScore);
-    json['awayScore'] = nativeToJson<int>(awayScore);
+    json['homeScore'] = homeScore;
+    json['awayScore'] = awayScore;
     return json;
   }
 
@@ -70,11 +70,11 @@ class ListMatchesByDateMatches {
 class ListMatchesByDateMatchesHomeTeam {
   String name;
   ListMatchesByDateMatchesHomeTeam.fromJson(dynamic json)
-    : name = nativeFromJson<String>(json['name']);
+    : name = json['name'] as String;
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
-    json['name'] = nativeToJson<String>(name);
+    json['name'] = name;
     return json;
   }
 
@@ -84,11 +84,11 @@ class ListMatchesByDateMatchesHomeTeam {
 class ListMatchesByDateMatchesAwayTeam {
   String name;
   ListMatchesByDateMatchesAwayTeam.fromJson(dynamic json)
-    : name = nativeFromJson<String>(json['name']);
+    : name = json['name'] as String;
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
-    json['name'] = nativeToJson<String>(name);
+    json['name'] = name;
     return json;
   }
 
@@ -117,11 +117,11 @@ class ListMatchesByDateVariables {
     'fromJson is deprecated for Variable classes as they are no longer required for deserialization.',
   )
   ListMatchesByDateVariables.fromJson(Map<String, dynamic> json)
-    : matchDate = nativeFromJson<DateTime>(json['matchDate']);
+    : matchDate = DateTime.parse(json['matchDate'] as String);
 
   Map<String, dynamic> toJson() {
     Map<String, dynamic> json = {};
-    json['matchDate'] = nativeToJson<DateTime>(matchDate);
+    json['matchDate'] = matchDate.toIso8601String();
     return json;
   }
 
