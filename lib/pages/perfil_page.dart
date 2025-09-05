@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:passaabola/pages/login_page.dart';
 import '../data/constants.dart';
 
 class PerfilPage extends StatefulWidget {
@@ -120,16 +121,20 @@ class _PerfilPageState extends State<PerfilPage> {
                   onPressed: () {
                     // Lógica para sair do app
                   },
-                  child: Text(
-                    "Sair",
-                    style: KTextStyle.titleText.copyWith(
-                      shadows: [
-                        Shadow(
-                          offset: const Offset(0, 1),
-                          blurRadius: 2.0,
-                          color: Colors.black26,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const LoginPage(),
                         ),
-                      ],
+                      );
+                    },
+                    child: Text(
+                      'Sair',
+                      style: KTextStyle.bodyText.copyWith(
+                        color: KConstants.primaryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),

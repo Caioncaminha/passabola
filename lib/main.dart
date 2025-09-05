@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'pages/main_page.dart';
+import 'pages/login_page.dart';
 import 'data/constants.dart';
 
 void main() {
@@ -35,7 +35,8 @@ class MyApp extends StatelessWidget {
           labelLarge: KTextStyle.buttonText,
         ),
       ),
-      home: const MainPage(),
+      home: const LoginPage(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
