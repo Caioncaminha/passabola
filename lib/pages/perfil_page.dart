@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:passaabola/pages/cadastro.dart';
 
 class PerfilPage extends StatefulWidget {
   const PerfilPage({super.key});
@@ -22,14 +23,12 @@ class _PerfilPageState extends State<PerfilPage> {
             SizedBox(
               height: 250,
               child: Stack(
-                clipBehavior: Clip.none, 
+                clipBehavior: Clip.none,
                 children: [
                   // Fundo roxo
                   Container(
                     height: 150,
-                    decoration: const BoxDecoration(
-                      color: corPrincipal,
-                    ),
+                    decoration: const BoxDecoration(color: corPrincipal),
                   ),
                   // Avatar de perfil posicionado
                   Positioned(
@@ -39,7 +38,7 @@ class _PerfilPageState extends State<PerfilPage> {
                     child: Center(
                       child: CircleAvatar(
                         radius: 70,
-                        backgroundColor: Colors.white, 
+                        backgroundColor: Colors.white,
                         child: CircleAvatar(
                           radius: 66,
                           backgroundColor: Colors.grey[300],
@@ -50,7 +49,7 @@ class _PerfilPageState extends State<PerfilPage> {
                 ],
               ),
             ),
-            
+
             // --- INFORMAÇÕES DO USUÁRIO ---
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -120,15 +119,21 @@ class _PerfilPageState extends State<PerfilPage> {
               borderColor: corPrincipal,
               onTap: () {},
             ),
-            
+
             // --- BOTÃO DE SAIR ---
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 20.0),
+              padding: const EdgeInsets.symmetric(
+                vertical: 30.0,
+                horizontal: 20.0,
+              ),
               child: Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () {
                     // Lógica para sair do app
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (_) => LoginPage()),
+                    );
                   },
                   child: const Text(
                     "Sair",
