@@ -9,10 +9,16 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedTabIndex = 0; // 0 para "Próximos jogos", 1 para "Jogos finalizados"
+  int _selectedTabIndex = 0;
 
   @override
   Widget build(BuildContext context) {
+    // --- CORES LOCAIS ---
+    const Color corVerdePrincipal = Color(0xFF708F56);
+    const Color corVerdeClaro = Color(0xFF8EB479);
+    const Color corRosaCard = Color(0xFFE6C4C8);
+    const Color corRosaClaro = Color(0xFFF9F1F2);
+    
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(KConstants.spacingMedium),
@@ -22,9 +28,25 @@ class _HomePageState extends State<HomePage> {
             // --- BARRA DE PESQUISA ---
             TextField(
               style: KTextStyle.inputText,
-              decoration: KInputDecoration.textFieldDecoration(
-                hintText: 'Pesquisar...',
-                prefixIcon: Icons.search,
+              decoration: InputDecoration(
+                hintText: "Pesquisar...",
+                hintStyle: KTextStyle.inputHintText,
+                prefixIcon: const Icon(Icons.search, color: KConstants.textSecondaryColor),
+                filled: true,
+                fillColor: corRosaClaro,
+                contentPadding: const EdgeInsets.symmetric(vertical: 15),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: const BorderSide(color: corRosaCard, width: 1.5),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: const BorderSide(color: corRosaCard, width: 1.5),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                  borderSide: const BorderSide(color: KConstants.secondaryColor, width: 2),
+                ),
               ),
             ),
             const SizedBox(height: KConstants.spacingLarge),
@@ -32,9 +54,9 @@ class _HomePageState extends State<HomePage> {
             // --- ABAS DE JOGOS ---
             Row(
               children: [
-                _buildTabItem("Próximos jogos", 0),
+                _buildTabItem("Próximos jogos", 0, corVerdePrincipal),
                 const SizedBox(width: KConstants.spacingLarge),
-                _buildTabItem("Jogos finalizados", 1),
+                _buildTabItem("Jogos finalizados", 1, corVerdePrincipal),
               ],
             ),
             const SizedBox(height: KConstants.spacingMedium),
@@ -66,44 +88,44 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: KConstants.spacingLarge),
 
             // --- SEÇÃO DESTAQUES ---
-            const _SectionHeader(title: "Destaques"),
+            _SectionHeader(title: "Destaques", color: corVerdePrincipal),
             const SizedBox(height: KConstants.spacingMedium),
             _buildDestaqueCard(
               imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbziMhNtB0BukzUAZ7NIzEU9bUIWpBKHDh7A&s',
               title: 'Lorem ipsum dolor sit amet',
               description: 'Lorem ipsum dolor sit amet consectetur adipiscing elit. Sit amet consectetur adipiscing elit quisque faucibus ex. Adipiscing elit quisque faucibus ex sapien vitae pellentesque.',
-              backgroundColor: KConstants.secondaryColor.withOpacity(0.15),
+              backgroundColor: corRosaCard,
             ),
             const SizedBox(height: KConstants.spacingLarge),
 
             // --- SEÇÃO VÍDEOS EM ALTA ---
-            const _SectionHeader(title: "Vídeos em alta"),
+            _SectionHeader(title: "Vídeos em alta", color: corVerdePrincipal),
             const SizedBox(height: KConstants.spacingMedium),
-            _buildVideoCard(title: "Título 1"),
-            _buildShowMoreButton(),
+            _buildVideoCard(title: "Título 1", backgroundColor: corVerdePrincipal),
+            _buildShowMoreButton(corVerdeClaro),
             const SizedBox(height: KConstants.spacingMedium),
 
             // --- SEÇÃO EVENTOS ---
-            const _SectionHeader(title: "Eventos"),
+            _SectionHeader(title: "Eventos", color: corVerdePrincipal),
             const SizedBox(height: KConstants.spacingMedium),
             _buildEventoCard(
               imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbziMhNtB0BukzUAZ7NIzEU9bUIWpBKHDh7A&s',
               title: "TÍTULO DE EVENTO",
-              cardColor: KConstants.secondaryColor.withOpacity(0.1),
-              titleBarColor: KConstants.secondaryColor.withOpacity(0.2),
+              cardColor: corRosaClaro,
+              titleBarColor: corRosaCard,
             ),
-            _buildShowMoreButton(),
+            _buildShowMoreButton(corVerdeClaro),
             const SizedBox(height: KConstants.spacingMedium),
 
             // --- SEÇÃO CAMPEÃS ---
-            const _SectionHeader(title: "Campeãs"),
+            _SectionHeader(title: "Campeãs", color: corVerdePrincipal),
             const SizedBox(height: KConstants.spacingMedium),
             _buildDestaqueCard(
               imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbziMhNtB0BukzUAZ7NIzEU9bUIWpBKHDh7A&s',
               title: '🏆 CAMPEÃS',
               isTitleBold: true,
               description: 'Lorem ipsum dolor sit amet consectetur adipiscing elit. Sit amet consectetur adipiscing elit quisque faucibus ex. Adipiscing elit quisque faucibus ex sapien vitae pellentesque.',
-              backgroundColor: KConstants.secondaryColor.withOpacity(0.15),
+              backgroundColor: corRosaCard,
             ),
             const SizedBox(height: KConstants.spacingLarge),
           ],
@@ -113,7 +135,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   // Widget auxiliar para os itens da aba
-  Widget _buildTabItem(String text, int index) {
+  Widget _buildTabItem(String text, int index, Color selectedColor) {
     final isSelected = _selectedTabIndex == index;
     return GestureDetector(
       onTap: () => setState(() => _selectedTabIndex = index),
@@ -123,7 +145,9 @@ class _HomePageState extends State<HomePage> {
           children: [
             Text(
               text,
-              style: isSelected ? KTextStyle.navigationActiveText : KTextStyle.navigationText,
+              style: isSelected 
+                  ? KTextStyle.navigationText.copyWith(color: selectedColor, fontWeight: FontWeight.bold) 
+                  : KTextStyle.navigationText,
             ),
             const SizedBox(height: KConstants.spacingExtraSmall),
             AnimatedContainer(
@@ -131,7 +155,7 @@ class _HomePageState extends State<HomePage> {
               height: isSelected ? 3 : 0,
               width: double.infinity,
               decoration: BoxDecoration(
-                color: KConstants.primaryColor,
+                color: selectedColor,
                 borderRadius: BorderRadius.circular(KConstants.borderRadiusSmall),
               ),
             ),
@@ -145,7 +169,8 @@ class _HomePageState extends State<HomePage> {
 // Widget auxiliar para os cabeçalhos de seção
 class _SectionHeader extends StatelessWidget {
   final String title;
-  const _SectionHeader({required this.title});
+  final Color color;
+  const _SectionHeader({required this.title, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -155,12 +180,12 @@ class _SectionHeader extends StatelessWidget {
           width: 5,
           height: 20,
           decoration: BoxDecoration(
-            color: KConstants.primaryColor,
+            color: color,
             borderRadius: BorderRadius.circular(KConstants.borderRadiusMedium),
           ),
         ),
         const SizedBox(width: KConstants.spacingSmall),
-        Text(title, style: KTextStyle.titleTealText),
+        Text(title, style: KTextStyle.titleText),
       ],
     );
   }
@@ -175,7 +200,6 @@ Widget _buildDestaqueCard({
   bool isTitleBold = false,
 }) {
   return Container(
-    // Usa a decoração de card padrão e sobrepõe a cor de fundo
     decoration: KDecoration.cardDecoration.copyWith(color: backgroundColor),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -206,15 +230,15 @@ Widget _buildDestaqueCard({
 }
 
 // Widget auxiliar para o card de "Vídeos em alta"
-Widget _buildVideoCard({required String title}) {
+Widget _buildVideoCard({required String title, required Color backgroundColor}) {
   return Column(
     children: [
       Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: KConstants.spacingMedium),
-        decoration: const BoxDecoration(
-          color: KConstants.primaryColor,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(KConstants.borderRadiusLarge)),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(KConstants.borderRadiusLarge)),
         ),
         child: Text(title, textAlign: TextAlign.center, style: KTextStyle.buttonText),
       ),
@@ -244,7 +268,7 @@ Widget _buildEventoCard({
       decoration: KDecoration.cardDecoration.copyWith(
         color: cardColor,
         border: Border.all(color: KConstants.surfaceColor.withOpacity(0.2), width: 2),
-        boxShadow: [], // Remove a sombra padrão para não duplicar com a borda
+        boxShadow: [],
       ),
       child: Column(
         children: [
@@ -262,12 +286,12 @@ Widget _buildEventoCard({
 }
 
 // Widget auxiliar para o botão "Show more"
-Widget _buildShowMoreButton() {
+Widget _buildShowMoreButton(Color color) {
   return Align(
     alignment: Alignment.centerRight,
     child: TextButton(
       onPressed: () {},
-      child: Text("Show more", style: KTextStyle.buttonTextPrimary),
+      child: Text("Show more", style: KTextStyle.buttonTextPrimary.copyWith(color: color)),
     ),
   );
 }
