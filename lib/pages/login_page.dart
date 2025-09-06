@@ -1,54 +1,44 @@
 import 'package:flutter/material.dart';
 import '../data/constants.dart';
+import 'cadastro.dart';
 import 'main_page.dart';
 
-class CadastroPage extends StatefulWidget {
-  const CadastroPage({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  State<CadastroPage> createState() => _CadastroPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _CadastroPageState extends State<CadastroPage> {
+class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
+  bool _rememberMe = false;
   bool _isLoading = false;
 
   @override
   void dispose() {
-    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  Future<void> _cadastrar() async {
+  Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
       });
 
-      // Simular delay de cadastro
-      await Future.delayed(const Duration(seconds: 2));
+      // Simular delay de login
+      await Future.delayed(const Duration(seconds: 1));
 
       setState(() {
         _isLoading = false;
       });
 
-      // Mostrar mensagem de sucesso
+      // Navegar para a página principal
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Cadastro realizado com sucesso!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-
-        // Navegar para a página principal
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const MainPage()),
         );
@@ -60,19 +50,6 @@ class _CadastroPageState extends State<CadastroPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: KConstants.backgroundColor,
-      appBar: AppBar(
-        backgroundColor: KConstants.primaryColor,
-        foregroundColor: Colors.white,
-        title: Text(
-          'CADASTRO',
-          style: KTextStyle.titleText.copyWith(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-      ),
       body: Stack(
         children: [
           // Decoração de fundo
@@ -136,8 +113,8 @@ class _CadastroPageState extends State<CadastroPage> {
                   children: <Widget>[
                     // Logo
                     Container(
-                      width: 100,
-                      height: 100,
+                      width: 120,
+                      height: 120,
                       decoration: BoxDecoration(
                         color: Colors.transparent,
                         shape: BoxShape.circle,
@@ -147,64 +124,23 @@ class _CadastroPageState extends State<CadastroPage> {
                         ),
                       ),
                       child: Icon(
-                        Icons.person_add,
-                        size: 60,
+                        Icons.sports_soccer,
+                        size: 80,
                         color: KConstants.primaryColor,
                       ),
                     ),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 20),
 
                     // Título
                     Text(
-                      'CRIAR CONTA',
+                      'PASSA A BOLA',
                       style: KTextStyle.titleText.copyWith(
-                        fontSize: 24,
+                        fontSize: 28,
                         color: KConstants.primaryColor,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 40),
-
-                    // Campo de nome
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20.0,
-                        vertical: 5.0,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(30.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: TextFormField(
-                        controller: _nameController,
-                        decoration: InputDecoration(
-                          hintText: 'NOME COMPLETO',
-                          hintStyle: TextStyle(
-                            color: KConstants.primaryColor.withOpacity(0.7),
-                            fontWeight: FontWeight.bold,
-                          ),
-                          border: InputBorder.none,
-                          prefixIcon: Icon(
-                            Icons.person_outline,
-                            color: KConstants.primaryColor,
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor, insira seu nome';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 50),
 
                     // Campo de e-mail
                     Container(
@@ -294,59 +230,36 @@ class _CadastroPageState extends State<CadastroPage> {
                         },
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 15),
 
-                    // Campo de confirmação de senha
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20.0,
-                        vertical: 5.0,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(30.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: TextFormField(
-                        controller: _confirmPasswordController,
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          hintText: 'CONFIRMAR SENHA',
-                          hintStyle: TextStyle(
-                            color: KConstants.primaryColor.withOpacity(0.7),
-                            fontWeight: FontWeight.bold,
-                          ),
-                          border: InputBorder.none,
-                          prefixIcon: Icon(
-                            Icons.lock_outline,
-                            color: KConstants.primaryColor,
+                    // Checkbox "Lembrar-me"
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: _rememberMe,
+                          onChanged: (value) {
+                            setState(() {
+                              _rememberMe = value ?? false;
+                            });
+                          },
+                          activeColor: KConstants.primaryColor,
+                        ),
+                        Text(
+                          'Lembrar-me',
+                          style: KTextStyle.bodyText.copyWith(
+                            color: KConstants.textPrimaryColor,
                           ),
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor, confirme sua senha';
-                          }
-                          if (value != _passwordController.text) {
-                            return 'As senhas não coincidem';
-                          }
-                          return null;
-                        },
-                      ),
+                      ],
                     ),
                     const SizedBox(height: 30),
 
-                    // Botão de cadastro
+                    // Botão de login
                     SizedBox(
                       width: double.infinity,
                       height: 50,
                       child: ElevatedButton(
-                        onPressed: _isLoading ? null : _cadastrar,
+                        onPressed: _isLoading ? null : _login,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: KConstants.primaryColor,
                           padding: const EdgeInsets.symmetric(vertical: 15),
@@ -365,7 +278,7 @@ class _CadastroPageState extends State<CadastroPage> {
                                 ),
                               )
                             : Text(
-                                'CADASTRAR',
+                                'ENTRAR',
                                 style: KTextStyle.buttonText.copyWith(
                                   color: Colors.white,
                                   fontSize: 18,
@@ -376,13 +289,17 @@ class _CadastroPageState extends State<CadastroPage> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Link para voltar ao login
+                    // Link para cadastro
                     TextButton(
                       onPressed: () {
-                        Navigator.of(context).pop();
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const CadastroPage(),
+                          ),
+                        );
                       },
                       child: Text(
-                        'Já tem uma conta? Faça login',
+                        'Não tem uma conta? Cadastre-se',
                         style: KTextStyle.bodyText.copyWith(
                           color: KConstants.primaryColor,
                           fontWeight: FontWeight.bold,

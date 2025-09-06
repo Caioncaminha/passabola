@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'pages/cadastro.dart';
+import 'pages/login_page.dart';
+import 'data/constants.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
@@ -33,10 +34,27 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         splashColor: Colors.transparent,
         highlightColor: Colors.transparent,
-
-        primarySwatch: Colors.purple,
+        primarySwatch: Colors.deepPurple,
+        primaryColor: KConstants.primaryColor,
+        scaffoldBackgroundColor: KConstants.backgroundColor,
+        appBarTheme: AppBarTheme(
+          backgroundColor: KConstants.primaryColor,
+          foregroundColor: KConstants.textLightColor,
+          titleTextStyle: KTextStyle.titleText.copyWith(
+            color: KConstants.textLightColor,
+            fontSize: KConstants.fontSizeLarge,
+          ),
+        ),
+        textTheme: TextTheme(
+          titleLarge: KTextStyle.titleText,
+          titleMedium: KTextStyle.subtitleText,
+          bodyLarge: KTextStyle.bodyText,
+          bodyMedium: KTextStyle.bodySecondaryText,
+          labelLarge: KTextStyle.buttonText,
+        ),
       ),
       home: const LoginPage(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }

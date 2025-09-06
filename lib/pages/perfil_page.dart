@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:passaabola/pages/cadastro.dart';
+import 'package:passaabola/pages/login_page.dart';
+import '../data/constants.dart';
 
 class PerfilPage extends StatefulWidget {
   const PerfilPage({super.key});
@@ -11,11 +12,8 @@ class PerfilPage extends StatefulWidget {
 class _PerfilPageState extends State<PerfilPage> {
   @override
   Widget build(BuildContext context) {
-    const Color corPrincipal = Color(0xFF6A446F);
-    const Color corSecundaria = Colors.green;
-
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: KConstants.backgroundColor,
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -28,7 +26,7 @@ class _PerfilPageState extends State<PerfilPage> {
                   // Fundo roxo
                   Container(
                     height: 150,
-                    decoration: const BoxDecoration(color: corPrincipal),
+                    decoration: BoxDecoration(color: KConstants.primaryColor),
                   ),
                   // Avatar de perfil posicionado
                   Positioned(
@@ -38,10 +36,12 @@ class _PerfilPageState extends State<PerfilPage> {
                     child: Center(
                       child: CircleAvatar(
                         radius: 70,
-                        backgroundColor: Colors.white,
+                        backgroundColor: KConstants.backgroundColor,
                         child: CircleAvatar(
                           radius: 66,
-                          backgroundColor: Colors.grey[300],
+                          backgroundColor: KConstants.surfaceColor.withOpacity(
+                            0.3,
+                          ),
                         ),
                       ),
                     ),
@@ -52,102 +52,89 @@ class _PerfilPageState extends State<PerfilPage> {
 
             // --- INFORMAÇÕES DO USUÁRIO ---
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              padding: EdgeInsets.symmetric(
+                horizontal: KConstants.spacingMedium,
+              ),
               child: Column(
                 children: [
-                  const Text(
-                    "Usuário",
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
+                  Text("Usuário", style: KTextStyle.extraLargeTitleText),
+                  SizedBox(height: KConstants.spacingExtraSmall),
+                  Text(
                     "TIME DO USUÁRIO - POSIÇÃO",
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.black,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: KTextStyle.subtitleText,
                   ),
-                  const SizedBox(height: 20),
-                  const Text(
+                  SizedBox(height: KConstants.spacingLarge),
+                  Text(
                     "DATA DE NASCIMENTO: 00/00/0000\n"
                     "CPF: 000.000.000-00\n"
                     "TEL.: (00) 0 0000-0000\n"
                     "ENDEREÇO: Rua Nome Qualquer, 10A",
                     textAlign: TextAlign.left,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.black,
+                    style: KTextStyle.bodyText.copyWith(
                       height: 1.5, // Espaçamento entre linhas
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 30),
+            SizedBox(height: KConstants.spacingExtraLarge),
 
             // --- MENU DE OPÇÕES ---
             _ProfileMenuItem(
               icon: Icons.edit_note,
               text: "Sua atividade",
-              color: corSecundaria,
-              borderColor: corPrincipal,
+              color: KConstants.successColor,
+              borderColor: KConstants.primaryColor,
               onTap: () {},
             ),
             _ProfileMenuItem(
               icon: Icons.notifications_none,
               text: "Notificações",
-              color: corSecundaria,
-              borderColor: corPrincipal,
+              color: KConstants.successColor,
+              borderColor: KConstants.primaryColor,
               onTap: () {},
             ),
             _ProfileMenuItem(
               icon: Icons.lock_outline,
               text: "Privacidade",
-              color: corSecundaria,
-              borderColor: corPrincipal,
+              color: KConstants.successColor,
+              borderColor: KConstants.primaryColor,
               onTap: () {},
             ),
             _ProfileMenuItem(
               icon: Icons.bookmark_border,
               text: "Salvos",
-              color: corSecundaria,
-              borderColor: corPrincipal,
+              color: KConstants.successColor,
+              borderColor: KConstants.primaryColor,
               onTap: () {},
             ),
 
             // --- BOTÃO DE SAIR ---
             Padding(
-              padding: const EdgeInsets.symmetric(
-                vertical: 30.0,
-                horizontal: 20.0,
+              padding: EdgeInsets.symmetric(
+                vertical: KConstants.spacingExtraLarge,
+                horizontal: KConstants.spacingLarge,
               ),
               child: Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () {
                     // Lógica para sair do app
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (_) => LoginPage()),
-                    );
                   },
-                  child: const Text(
-                    "Sair",
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      shadows: [
-                        Shadow(
-                          offset: Offset(0, 1),
-                          blurRadius: 2.0,
-                          color: Colors.black26,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const LoginPage(),
                         ),
-                      ],
+                      );
+                    },
+                    child: Text(
+                      'Sair',
+                      style: KTextStyle.bodyText.copyWith(
+                        color: KConstants.primaryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -182,8 +169,11 @@ class _ProfileMenuItem extends StatelessWidget {
       onTap: onTap,
       child: Container(
         color: color,
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-        margin: const EdgeInsets.only(bottom: 2), // Espaço entre os botões
+        padding: EdgeInsets.symmetric(
+          vertical: KConstants.spacingMedium,
+          horizontal: KConstants.spacingLarge,
+        ),
+        margin: EdgeInsets.only(bottom: 2), // Espaço entre os botões
         decoration: BoxDecoration(
           color: color,
           border: Border(
@@ -193,15 +183,11 @@ class _ProfileMenuItem extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(icon, color: Colors.black, size: 24),
-            const SizedBox(width: 16),
+            Icon(icon, color: KConstants.textPrimaryColor, size: 24),
+            SizedBox(width: KConstants.spacingMedium),
             Text(
               text,
-              style: const TextStyle(
-                color: Colors.black,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
+              style: KTextStyle.bodyText.copyWith(fontWeight: FontWeight.w500),
             ),
           ],
         ),
