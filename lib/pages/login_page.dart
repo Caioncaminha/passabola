@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../data/constants.dart';
 import 'cadastro.dart';
@@ -25,23 +26,53 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _login() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+    setState(() {
+      _isLoading = true;
+    });
 
-      // Simular delay de login
-      await Future.delayed(const Duration(seconds: 1));
+    try {
+      final String email = _emailController.text.trim();
+      final String password = _passwordController.text.trim();
 
-      setState(() {
-        _isLoading = false;
-      });
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-      // Navegar para a página principal
+      if (!mounted) return;
+
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (context) => MainPage()));
+    } on FirebaseAuthException catch (e) {
+      String message = 'Ocorreu um error';
+      if (e.code == 'user-not-found') {
+        message = 'Nenhum usuario encontrado com esse gmail.';
+      } else if (e.code == 'wrong-password') {
+        message = 'senha incorreta';
+      } else if (e.code == 'invalid-credential') {
+        message = 'Email ou senhas invalidas';
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: Colors.red),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Falha inesperada'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MainPage()),
-        );
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }

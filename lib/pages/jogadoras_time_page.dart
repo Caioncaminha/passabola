@@ -3,15 +3,13 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:passaabola/data/constants.dart';
 
-/**
- * PÁGINA DE JOGADORAS DE UM TIME ESPECÍFICO
- * 
- * Esta página é responsável por:
- * 1. Receber um time como parâmetro
- * 2. Buscar as jogadoras desse time na API
- * 3. Exibir as jogadoras em uma lista
- * 4. Mostrar informações detalhadas de cada jogadora
- */
+/// PÁGINA DE JOGADORAS DE UM TIME ESPECÍFICO
+///
+/// Esta página é responsável por:
+/// 1. Receber um time como parâmetro
+/// 2. Buscar as jogadoras desse time na API
+/// 3. Exibir as jogadoras em uma lista
+/// 4. Mostrar informações detalhadas de cada jogadora
 class JogadorasTimePage extends StatefulWidget {
   // Parâmetro obrigatório: dados do time selecionado
   final Map<String, dynamic> team;
@@ -35,27 +33,23 @@ class _JogadorasTimePageState extends State<JogadorasTimePage> {
   bool isLoading = false; // Se está carregando
   String? errorMessage; // Mensagem de erro se houver
 
-  /**
-   * MÉTODO INITSTATE
-   * 
-   * Este método é chamado automaticamente quando a página é criada.
-   * Aqui iniciamos o carregamento das jogadoras.
-   */
+  /// MÉTODO INITSTATE
+  ///
+  /// Este método é chamado automaticamente quando a página é criada.
+  /// Aqui iniciamos o carregamento das jogadoras.
   @override
   void initState() {
     super.initState();
     _fetchPlayers(); // Chama a função para buscar jogadoras
   }
 
-  /**
-   * FUNÇÃO PARA BUSCAR JOGADORAS
-   * 
-   * Esta função:
-   * 1. Pega o ID do time
-   * 2. Faz requisição para a API
-   * 3. Processa a resposta
-   * 4. Atualiza a interface
-   */
+  /// FUNÇÃO PARA BUSCAR JOGADORAS
+  ///
+  /// Esta função:
+  /// 1. Pega o ID do time
+  /// 2. Faz requisição para a API
+  /// 3. Processa a resposta
+  /// 4. Atualiza a interface
   Future<void> _fetchPlayers() async {
     print('🔄 Iniciando busca de jogadoras...');
 

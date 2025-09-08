@@ -8,7 +8,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedTabIndex = 0; // 0 para "Próximos jogos", 1 para "Jogos finalizados"
+  int _selectedTabIndex =
+      0; // 0 para "Próximos jogos", 1 para "Jogos finalizados"
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +17,7 @@ class _HomePageState extends State<HomePage> {
     const Color corVerdeClaro = Color(0xFF8EB479);
     const Color corRosaCard = Color(0xFFE6C4C8);
     const Color corRosaClaro = Color(0xFFF9F1F2);
-    
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -41,7 +42,10 @@ class _HomePageState extends State<HomePage> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
-                  borderSide: const BorderSide(color: Color.fromARGB(255, 230, 172, 178), width: 2),
+                  borderSide: const BorderSide(
+                    color: Color.fromARGB(255, 230, 172, 178),
+                    width: 2,
+                  ),
                 ),
               ),
             ),
@@ -87,9 +91,11 @@ class _HomePageState extends State<HomePage> {
             const _SectionHeader(title: "Destaques"),
             const SizedBox(height: 12),
             _buildDestaqueCard(
-              imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbziMhNtB0BukzUAZ7NIzEU9bUIWpBKHDh7A&s',
+              imageUrl:
+                  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbziMhNtB0BukzUAZ7NIzEU9bUIWpBKHDh7A&s',
               title: 'Lorem ipsum dolor sit amet',
-              description: 'Lorem ipsum dolor sit amet consectetur adipiscing elit. Sit amet consectetur adipiscing elit quisque faucibus ex. Adipiscing elit quisque faucibus ex sapien vitae pellentesque.',
+              description:
+                  'Lorem ipsum dolor sit amet consectetur adipiscing elit. Sit amet consectetur adipiscing elit quisque faucibus ex. Adipiscing elit quisque faucibus ex sapien vitae pellentesque.',
               backgroundColor: corRosaCard,
             ),
             const SizedBox(height: 24),
@@ -104,27 +110,29 @@ class _HomePageState extends State<HomePage> {
             _buildShowMoreButton(corVerdeClaro),
             const SizedBox(height: 12),
 
-
             // --- SEÇÃO EVENTOS ---
             const _SectionHeader(title: "Eventos"),
             const SizedBox(height: 12),
             _buildEventoCard(
-              imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbziMhNtB0BukzUAZ7NIzEU9bUIWpBKHDh7A&s',
+              imageUrl:
+                  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbziMhNtB0BukzUAZ7NIzEU9bUIWpBKHDh7A&s',
               title: "TÍTULO DE EVENTO",
               cardColor: corRosaClaro,
               titleBarColor: corRosaCard,
             ),
-             _buildShowMoreButton(corVerdeClaro),
+            _buildShowMoreButton(corVerdeClaro),
             const SizedBox(height: 12),
 
             // --- SEÇÃO CAMPEÃS ---
             const _SectionHeader(title: "Campeãs"),
             const SizedBox(height: 12),
             _buildDestaqueCard(
-              imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbziMhNtB0BukzUAZ7NIzEU9bUIWpBKHDh7A&s',
+              imageUrl:
+                  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbziMhNtB0BukzUAZ7NIzEU9bUIWpBKHDh7A&s',
               title: '🏆 CAMPEÃS',
               isTitleBold: true,
-              description: 'Lorem ipsum dolor sit amet consectetur adipiscing elit. Sit amet consectetur adipiscing elit quisque faucibus ex. Adipiscing elit quisque faucibus ex sapien vitae pellentesque.',
+              description:
+                  'Lorem ipsum dolor sit amet consectetur adipiscing elit. Sit amet consectetur adipiscing elit quisque faucibus ex. Adipiscing elit quisque faucibus ex sapien vitae pellentesque.',
               backgroundColor: corRosaCard,
             ),
             const SizedBox(height: 24),
@@ -140,7 +148,8 @@ class _HomePageState extends State<HomePage> {
 
     return GestureDetector(
       onTap: () => setState(() => _selectedTabIndex = index),
-      child: IntrinsicWidth( // 👈 mede pela largura do texto
+      child: IntrinsicWidth(
+        // 👈 mede pela largura do texto
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -156,7 +165,7 @@ class _HomePageState extends State<HomePage> {
             AnimatedContainer(
               duration: const Duration(milliseconds: 180),
               height: isSelected ? 3 : 0,
-              width: double.infinity,              // 👈 vira “100% do texto”
+              width: double.infinity, // 👈 vira “100% do texto”
               decoration: BoxDecoration(
                 color: const Color(0xFF708F56),
                 borderRadius: BorderRadius.circular(2),
@@ -175,7 +184,7 @@ class _SectionHeader extends StatelessWidget {
   const _SectionHeader({required this.title});
 
   @override
-Widget build(BuildContext context) {
+  Widget build(BuildContext context) {
     return Row(
       children: [
         Container(
@@ -214,7 +223,12 @@ Widget _buildDestaqueCard({
       children: [
         ClipRRect(
           borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-          child: Image.network(imageUrl, fit: BoxFit.cover, width: double.infinity, height: 180),
+          child: Image.network(
+            imageUrl,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: 180,
+          ),
         ),
         Padding(
           padding: const EdgeInsets.all(12.0),
@@ -227,13 +241,16 @@ Widget _buildDestaqueCard({
                   fontSize: 16,
                   fontWeight: isTitleBold ? FontWeight.bold : FontWeight.w600,
                   color: Colors.black,
-                  
                 ),
               ),
               const Divider(color: Colors.black54, thickness: 1, height: 20),
               Text(
                 description,
-                style: const TextStyle(fontSize: 14, color: Colors.black87, height: 1.4),
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.black87,
+                  height: 1.4,
+                ),
               ),
             ],
           ),
@@ -244,7 +261,10 @@ Widget _buildDestaqueCard({
 }
 
 // Widget auxiliar para o card de "Vídeos em alta"
-Widget _buildVideoCard({required String title, required Color backgroundColor}) {
+Widget _buildVideoCard({
+  required String title,
+  required Color backgroundColor,
+}) {
   return Column(
     children: [
       Container(
@@ -257,7 +277,11 @@ Widget _buildVideoCard({required String title, required Color backgroundColor}) 
         child: Text(
           title,
           textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       Container(
@@ -265,9 +289,15 @@ Widget _buildVideoCard({required String title, required Color backgroundColor}) 
         width: double.infinity,
         decoration: BoxDecoration(
           color: Colors.grey[300],
-          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(15)),
+          borderRadius: const BorderRadius.vertical(
+            bottom: Radius.circular(15),
+          ),
         ),
-        child: const Icon(Icons.play_circle_fill, color: Colors.white, size: 60),
+        child: const Icon(
+          Icons.play_circle_fill,
+          color: Colors.white,
+          size: 60,
+        ),
       ),
     ],
   );
@@ -285,11 +315,16 @@ Widget _buildEventoCard({
     child: Container(
       decoration: BoxDecoration(
         color: cardColor,
-        border: Border.all(color: Colors.grey[300]!, width: 2)
+        border: Border.all(color: Colors.grey[300]!, width: 2),
       ),
       child: Column(
         children: [
-          Image.network(imageUrl, fit: BoxFit.cover, width: double.infinity, height: 180),
+          Image.network(
+            imageUrl,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: 180,
+          ),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 12),
@@ -297,9 +332,13 @@ Widget _buildEventoCard({
             child: Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          )
+          ),
         ],
       ),
     ),

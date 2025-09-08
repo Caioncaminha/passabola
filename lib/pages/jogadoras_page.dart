@@ -20,10 +20,10 @@ class _JogadorasPageState extends State<JogadorasPage> {
           // Campo de pesquisa
           Padding(
             padding: EdgeInsets.fromLTRB(
-              KConstants.spacingMedium, 
-              KConstants.spacingMedium, 
-              KConstants.spacingMedium, 
-              KConstants.spacingSmall
+              KConstants.spacingMedium,
+              KConstants.spacingMedium,
+              KConstants.spacingMedium,
+              KConstants.spacingSmall,
             ),
             child: TextField(
               decoration: KInputDecoration.textFieldDecoration(
@@ -32,7 +32,7 @@ class _JogadorasPageState extends State<JogadorasPage> {
               ),
             ),
           ),
-          // Lista de jogadoras 
+          // Lista de jogadoras
           Expanded(
             child: ListView.builder(
               padding: EdgeInsets.only(top: KConstants.spacingSmall),
@@ -42,15 +42,16 @@ class _JogadorasPageState extends State<JogadorasPage> {
                   children: [
                     Padding(
                       padding: EdgeInsets.symmetric(
-                        horizontal: KConstants.spacingMedium, 
-                        vertical: KConstants.spacingSmall
+                        horizontal: KConstants.spacingMedium,
+                        vertical: KConstants.spacingSmall,
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           CircleAvatar(
                             radius: 35,
-                            backgroundColor: KConstants.surfaceColor.withOpacity(0.3),
+                            backgroundColor: KConstants.surfaceColor
+                                .withOpacity(0.3),
                           ),
                           SizedBox(width: KConstants.spacingMedium),
                           Expanded(
@@ -58,7 +59,8 @@ class _JogadorasPageState extends State<JogadorasPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
