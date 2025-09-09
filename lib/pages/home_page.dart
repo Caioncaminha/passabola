@@ -14,7 +14,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     // --- CORES LOCAIS ---
-    const Color corVerdePrincipal = Color(0xFF708F56);
+    const Color corVerdePrincipal = Kconstants.lightGreenColor;
     const Color corVerdeClaro = Color(0xFF8EB479);
     const Color corRosaCard = Color(0xFFE6C4C8);
     const Color corRosaClaro = Color(0xFFF9F1F2);
