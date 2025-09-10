@@ -14,7 +14,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     // --- CORES LOCAIS ---
-    const Color corVerdePrincipal = Kconstants.lightGreenColor;
+    const Color corVerdePrincipal = KConstants.lightGreenColor;
     const Color corVerdeClaro = Color(0xFF8EB479);
     const Color corRosaCard = Color(0xFFE6C4C8);
     const Color corRosaClaro = Color(0xFFF9F1F2);
@@ -122,7 +122,7 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: KConstants.spacingMedium),
             _buildDestaqueCard(
               imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbziMhNtB0BukzUAZ7NIzEU9bUIWpBKHDh7A&s',
-              title: '🏆 CAMPEÃS',
+              title: '🏆 CAMPEÃS 🏆',
               isTitleBold: true,
               description: 'Lorem ipsum dolor sit amet consectetur adipiscing elit. Sit amet consectetur adipiscing elit quisque faucibus ex. Adipiscing elit quisque faucibus ex sapien vitae pellentesque.',
               backgroundColor: corRosaCard,

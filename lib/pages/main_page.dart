@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:passaabola/pages/jogos_page.dart';
 import 'perfil_page.dart';
 import 'testeAPI.dart';
 import '../widgets/custom_app_bar.dart';
@@ -19,8 +20,8 @@ class _MainPageState extends State<MainPage> {
   // Páginas alinhadas às 5 abas do BottomNavigationBar
   static const List<Widget> _pages = <Widget>[
     HomePage(),
-    Center(child: Text('Página de Eventos', style: KTextStyle.titleText)),
     const Api(),
+    JogosPage(),
     Center(child: Text('Página de Notícias', style: KTextStyle.titleText)),
     PerfilPage(),
   ];
