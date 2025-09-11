@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:passaabola/pages/login_page.dart';
 import '../data/constants.dart';
@@ -10,7 +11,40 @@ class PerfilPage extends StatefulWidget {
 }
 
 class _PerfilPageState extends State<PerfilPage> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
+  late final String isRegistered;
+  bool _isLoading = false;
+
+  Future<bool> getIsRegistered() async {
+    try {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('usuarios')
+          .doc(isRegistered)
+          .get();
+      if (userDoc.exists && userDoc.data() != null) {
+        final data = userDoc.data as Map<String, dynamic>;
+        return data['isRegistered'] ?? false;
+      }
+    } catch (e) {
+      print('Erro ao buscar dados : $e');
+    }
+    return false;
+  }
+
   @override
+  void buzzFeedQuiz() {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+    setState(() {
+      _isLoading = true;
+    });
+  }
+
+  @override
+  void dispose() {}
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: KConstants.backgroundColor,

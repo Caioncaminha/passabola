@@ -38,7 +38,6 @@ class _CadastroPageState extends State<CadastroPage> {
         final String name = _nameController.text.trim();
         final String email = _emailController.text.trim();
         final String password = _passwordController.text.trim();
-
         // 1) Cria o usuário de autenticação
         final UserCredential credential = await FirebaseAuth.instance
             .createUserWithEmailAndPassword(email: email, password: password);
@@ -57,6 +56,7 @@ class _CadastroPageState extends State<CadastroPage> {
           'name': name,
           'email': email,
           'createdAt': FieldValue.serverTimestamp(),
+          'isRegistered': false,
         }, SetOptions(merge: true));
 
         if (!mounted) return;
