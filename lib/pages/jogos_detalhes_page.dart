@@ -212,7 +212,7 @@ class _PlayerDot extends StatelessWidget {
   }
 }
 
-// Widget auxiliar para as pílulas de estatísticas (inalterado)
+// Widget auxiliar para as pílulas de estatísticas
 class _StatsPill extends StatelessWidget {
   final String label;
   final Color color;

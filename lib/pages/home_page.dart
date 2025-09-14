@@ -1,6 +1,26 @@
 import 'package:flutter/material.dart';
 import '../data/constants.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+// Função assíncrona para lançar a URL
+Future<void> _launchURL(String url) async {
+  final Uri uri = Uri.parse(url);
+  if (!await launchUrl(uri)) {
+    // Se não conseguir abrir a URL, lança uma exceção (ou mostra um erro)
+    throw 'Não foi possível abrir $url';
+  }
+}
+
+// Esta função extrai o ID de uma URL comum do YouTube
+String? getYoutubeVideoId(String url) {
+  if (!url.contains("youtube.com/") && !url.contains("youtu.be/")) {
+    return null;
+  }
+  if (url.contains("youtu.be/")) {
+    return url.split("youtu.be/").last.split("?").first;
+  }
+  return url.split("v=").last.split("&").first;
+}
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -19,6 +39,10 @@ class _HomePageState extends State<HomePage> {
     const Color corRosaCard = Color(0xFFE6C4C8);
     const Color corRosaClaro = Color(0xFFF9F1F2);
     
+    // --- DEFINIR LINKS AQUI ---
+    const String videoUrl = 'https://youtu.be/pr4wX4hCVLs?si=n4hKZkJ2o0oPTaex';
+    const String channelUrl = 'https://www.youtube.com/@passabola';
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(KConstants.spacingMedium),
@@ -101,8 +125,16 @@ class _HomePageState extends State<HomePage> {
             // --- SEÇÃO VÍDEOS EM ALTA ---
             _SectionHeader(title: "Vídeos em alta", color: corVerdePrincipal),
             const SizedBox(height: KConstants.spacingMedium),
-            _buildVideoCard(title: "Título 1", backgroundColor: corVerdePrincipal),
-            _buildShowMoreButton(corVerdeClaro),
+            _buildVideoCard(
+              title: "RETA FINAL DA GRAVIDEZ - FALA BEBÊ!",
+              backgroundColor: corVerdePrincipal,
+              youtubeUrl: videoUrl,
+            ),
+            _buildShowMoreButton(
+              color: corVerdeClaro,
+              // Ação para abrir o canal do YouTube
+              onPressed: () => _launchURL(channelUrl), 
+            ),
             const SizedBox(height: KConstants.spacingMedium),
 
             // --- SEÇÃO EVENTOS ---
@@ -114,7 +146,14 @@ class _HomePageState extends State<HomePage> {
               cardColor: corRosaClaro,
               titleBarColor: corRosaCard,
             ),
-            _buildShowMoreButton(corVerdeClaro),
+            _buildShowMoreButton(
+              color: corVerdeClaro,
+              onPressed: () {
+                print("Botão 'Show more' de Eventos clicado!");
+                // No futuro:
+                // Navigator.push(context, MaterialPageRoute(builder: (context) => PaginaDeEventos()));
+              },
+            ),
             const SizedBox(height: KConstants.spacingMedium),
 
             // --- SEÇÃO CAMPEÃS ---
@@ -230,28 +269,83 @@ Widget _buildDestaqueCard({
 }
 
 // Widget auxiliar para o card de "Vídeos em alta"
-Widget _buildVideoCard({required String title, required Color backgroundColor}) {
-  return Column(
-    children: [
-      Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: KConstants.spacingMedium),
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(KConstants.borderRadiusLarge)),
+Widget _buildVideoCard({
+  required String title,
+  required Color backgroundColor,
+  required String youtubeUrl,
+}) {
+  // Extrai o ID do vídeo usando a nossa nova função
+  final String? videoId = getYoutubeVideoId(youtubeUrl);
+
+  return GestureDetector(
+    onTap: () {
+      // O clique continua abrindo a URL do vídeo
+      _launchURL(youtubeUrl);
+    },
+    child: Column(
+      children: [
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: KConstants.spacingMedium),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(KConstants.borderRadiusLarge)),
+          ),
+          child: Text(title, textAlign: TextAlign.center, style: KTextStyle.buttonText),
         ),
-        child: Text(title, textAlign: TextAlign.center, style: KTextStyle.buttonText),
-      ),
-      Container(
-        height: 180,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: KConstants.surfaceColor.withOpacity(0.2),
-          borderRadius: const BorderRadius.vertical(bottom: Radius.circular(KConstants.borderRadiusLarge)),
+        // O container da imagem agora é um Stack para sobrepor o ícone de "play"
+        Container(
+          height: 180,
+          width: double.infinity,
+          decoration: const BoxDecoration(
+            color: KConstants.surfaceColor, // Cor de fundo enquanto a imagem carrega
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(KConstants.borderRadiusLarge)),
+          ),
+          child: (videoId == null)
+              // Se não conseguir extrair um ID, mostra o ícone de erro
+              ? const Center(child: Icon(Icons.error_outline, color: Colors.white, size: 60))
+              // Se tiver um ID, mostra a thumbnail e o ícone de play
+              : Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // A Thumbnail do vídeo
+                    ClipRRect(
+                      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(KConstants.borderRadiusLarge)),
+                      child: Image.network(
+                        'https://img.youtube.com/vi/$videoId/hqdefault.jpg', // URL padrão da thumbnail
+                        fit: BoxFit.cover,
+                        // Mostra um indicador de carregamento enquanto a imagem baixa
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return const Center(child: CircularProgressIndicator(color: Colors.white));
+                        },
+                        // Mostra um ícone de erro se a imagem não carregar
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Center(child: Icon(Icons.image_not_supported, color: Colors.white, size: 50));
+                        },
+                      ),
+                    ),
+                    // Container com um gradiente escuro para dar contraste
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(KConstants.borderRadiusLarge)),
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Colors.transparent, Colors.black.withOpacity(0.5)],
+                        ),
+                      ),
+                    ),
+                    // O ícone de "play"
+                    const Center(
+                      child: Icon(Icons.play_circle_fill, color: Colors.white, size: 60,
+                        shadows: [Shadow(color: Colors.black54, blurRadius: 10)]),
+                    ),
+                  ],
+                ),
         ),
-        child: const Icon(Icons.play_circle_fill, color: Colors.white, size: 60),
-      ),
-    ],
+      ],
+    ),
   );
 }
 
@@ -286,11 +380,14 @@ Widget _buildEventoCard({
 }
 
 // Widget auxiliar para o botão "Show more"
-Widget _buildShowMoreButton(Color color) {
+Widget _buildShowMoreButton({
+  required Color color,
+  required VoidCallback onPressed,
+}) {
   return Align(
     alignment: Alignment.centerRight,
     child: TextButton(
-      onPressed: () {},
+      onPressed: onPressed, 
       child: Text("Show more", style: KTextStyle.buttonTextPrimary.copyWith(color: color)),
     ),
   );
