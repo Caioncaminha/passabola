@@ -4,6 +4,7 @@ class KConstants {
   static const String themeModeKey = 'themeModeKey';
 
   // Cores principais
+  static const Color lightGreenColor = Color(0xFF708F56); // verde claro
   static const Color primaryColor = Color(0xFF5e3b63); // Roxo escuro
   static const Color secondaryColor = Color(0xFFa74e67); // Rosa avermelhado
   static const Color backgroundColor = Colors.white;

@@ -1,4 +1,26 @@
 import 'package:flutter/material.dart';
+import '../data/constants.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+// Função assíncrona para lançar a URL
+Future<void> _launchURL(String url) async {
+  final Uri uri = Uri.parse(url);
+  if (!await launchUrl(uri)) {
+    // Se não conseguir abrir a URL, lança uma exceção (ou mostra um erro)
+    throw 'Não foi possível abrir $url';
+  }
+}
+
+// Esta função extrai o ID de uma URL comum do YouTube
+String? getYoutubeVideoId(String url) {
+  if (!url.contains("youtube.com/") && !url.contains("youtu.be/")) {
+    return null;
+  }
+  if (url.contains("youtu.be/")) {
+    return url.split("youtu.be/").last.split("?").first;
+  }
+  return url.split("v=").last.split("&").first;
+}
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,22 +35,28 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    const Color corVerdePrincipal = Color(0xFF708F56);
+    // --- CORES LOCAIS ---
+    const Color corVerdePrincipal = KConstants.lightGreenColor;
     const Color corVerdeClaro = Color(0xFF8EB479);
     const Color corRosaCard = Color(0xFFE6C4C8);
     const Color corRosaClaro = Color(0xFFF9F1F2);
 
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(KConstants.spacingMedium),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // --- BARRA DE PESQUISA ---
             TextField(
+              style: KTextStyle.inputText,
               decoration: InputDecoration(
                 hintText: "Pesquisar...",
-                hintStyle: TextStyle(color: Colors.grey[600]),
-                prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
+                hintStyle: KTextStyle.inputHintText,
+                prefixIcon: const Icon(
+                  Icons.search,
+                  color: KConstants.textSecondaryColor,
+                ),
                 filled: true,
                 fillColor: corRosaClaro,
                 contentPadding: const EdgeInsets.symmetric(vertical: 15),
@@ -49,17 +77,17 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: KConstants.spacingLarge),
 
             // --- ABAS DE JOGOS ---
             Row(
               children: [
-                _buildTabItem("Próximos jogos", 0),
-                const SizedBox(width: 20),
-                _buildTabItem("Jogos finalizados", 1),
+                _buildTabItem("Próximos jogos", 0, corVerdePrincipal),
+                const SizedBox(width: KConstants.spacingLarge),
+                _buildTabItem("Jogos finalizados", 1, corVerdePrincipal),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: KConstants.spacingMedium),
 
             // --- PLACEHOLDERS CINZAS ---
             Row(
@@ -68,28 +96,32 @@ class _HomePageState extends State<HomePage> {
                   child: Container(
                     height: 60,
                     decoration: BoxDecoration(
-                      color: Colors.grey[350],
-                      borderRadius: BorderRadius.circular(8),
+                      color: KConstants.surfaceColor.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(
+                        KConstants.borderRadiusMedium,
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: KConstants.spacingMedium),
                 Expanded(
                   child: Container(
                     height: 60,
                     decoration: BoxDecoration(
-                      color: Colors.grey[350],
-                      borderRadius: BorderRadius.circular(8),
+                      color: KConstants.surfaceColor.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(
+                        KConstants.borderRadiusMedium,
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: KConstants.spacingLarge),
 
             // --- SEÇÃO DESTAQUES ---
-            const _SectionHeader(title: "Destaques"),
-            const SizedBox(height: 12),
+            _SectionHeader(title: "Destaques", color: corVerdePrincipal),
+            const SizedBox(height: KConstants.spacingMedium),
             _buildDestaqueCard(
               imageUrl:
                   'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbziMhNtB0BukzUAZ7NIzEU9bUIWpBKHDh7A&s',
@@ -98,21 +130,22 @@ class _HomePageState extends State<HomePage> {
                   'Lorem ipsum dolor sit amet consectetur adipiscing elit. Sit amet consectetur adipiscing elit quisque faucibus ex. Adipiscing elit quisque faucibus ex sapien vitae pellentesque.',
               backgroundColor: corRosaCard,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: KConstants.spacingLarge),
 
             // --- SEÇÃO VÍDEOS EM ALTA ---
-            const _SectionHeader(title: "Vídeos em alta"),
-            const SizedBox(height: 12),
+            _SectionHeader(title: "Vídeos em alta", color: corVerdePrincipal),
+            const SizedBox(height: KConstants.spacingMedium),
             _buildVideoCard(
-              title: "Título 1",
+              title: "RETA FINAL DA GRAVIDEZ - FALA BEBÊ!",
               backgroundColor: corVerdePrincipal,
+              youtubeUrl: videoUrl,
             ),
             _buildShowMoreButton(corVerdeClaro),
             const SizedBox(height: 12),
 
             // --- SEÇÃO EVENTOS ---
-            const _SectionHeader(title: "Eventos"),
-            const SizedBox(height: 12),
+            _SectionHeader(title: "Eventos", color: corVerdePrincipal),
+            const SizedBox(height: KConstants.spacingMedium),
             _buildEventoCard(
               imageUrl:
                   'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbziMhNtB0BukzUAZ7NIzEU9bUIWpBKHDh7A&s',
@@ -124,8 +157,8 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 12),
 
             // --- SEÇÃO CAMPEÃS ---
-            const _SectionHeader(title: "Campeãs"),
-            const SizedBox(height: 12),
+            _SectionHeader(title: "Campeãs", color: corVerdePrincipal),
+            const SizedBox(height: KConstants.spacingMedium),
             _buildDestaqueCard(
               imageUrl:
                   'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbziMhNtB0BukzUAZ7NIzEU9bUIWpBKHDh7A&s',
@@ -135,7 +168,7 @@ class _HomePageState extends State<HomePage> {
                   'Lorem ipsum dolor sit amet consectetur adipiscing elit. Sit amet consectetur adipiscing elit quisque faucibus ex. Adipiscing elit quisque faucibus ex sapien vitae pellentesque.',
               backgroundColor: corRosaCard,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: KConstants.spacingLarge),
           ],
         ),
       ),
@@ -143,9 +176,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   // Widget auxiliar para os itens da aba
-  Widget _buildTabItem(String text, int index) {
+  Widget _buildTabItem(String text, int index, Color selectedColor) {
     final isSelected = _selectedTabIndex == index;
-
     return GestureDetector(
       onTap: () => setState(() => _selectedTabIndex = index),
       child: IntrinsicWidth(
@@ -155,20 +187,23 @@ class _HomePageState extends State<HomePage> {
           children: [
             Text(
               text,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected ? const Color(0xFF708F56) : Colors.black87,
-              ),
+              style: isSelected
+                  ? KTextStyle.navigationText.copyWith(
+                      color: selectedColor,
+                      fontWeight: FontWeight.bold,
+                    )
+                  : KTextStyle.navigationText,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: KConstants.spacingExtraSmall),
             AnimatedContainer(
               duration: const Duration(milliseconds: 180),
               height: isSelected ? 3 : 0,
               width: double.infinity, // 👈 vira “100% do texto”
               decoration: BoxDecoration(
-                color: const Color(0xFF708F56),
-                borderRadius: BorderRadius.circular(2),
+                color: selectedColor,
+                borderRadius: BorderRadius.circular(
+                  KConstants.borderRadiusSmall,
+                ),
               ),
             ),
           ],
@@ -181,7 +216,8 @@ class _HomePageState extends State<HomePage> {
 // Widget auxiliar para os cabeçalhos de seção
 class _SectionHeader extends StatelessWidget {
   final String title;
-  const _SectionHeader({required this.title});
+  final Color color;
+  const _SectionHeader({required this.title, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -191,15 +227,12 @@ class _SectionHeader extends StatelessWidget {
           width: 5,
           height: 20,
           decoration: BoxDecoration(
-            color: const Color(0xFF708F56),
-            borderRadius: BorderRadius.circular(8),
+            color: color,
+            borderRadius: BorderRadius.circular(KConstants.borderRadiusMedium),
           ),
         ),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
+        const SizedBox(width: KConstants.spacingSmall),
+        Text(title, style: KTextStyle.titleText),
       ],
     );
   }
@@ -214,10 +247,7 @@ Widget _buildDestaqueCard({
   bool isTitleBold = false,
 }) {
   return Container(
-    decoration: BoxDecoration(
-      color: backgroundColor,
-      borderRadius: BorderRadius.circular(15),
-    ),
+    decoration: KDecoration.cardDecoration.copyWith(color: backgroundColor),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -231,9 +261,9 @@ Widget _buildDestaqueCard({
           ),
         ),
         Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: const EdgeInsets.all(KConstants.spacingMedium),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 title,
@@ -311,9 +341,9 @@ Widget _buildEventoCard({
   required Color titleBarColor,
 }) {
   return ClipRRect(
-    borderRadius: BorderRadius.circular(15),
+    borderRadius: BorderRadius.circular(KConstants.borderRadiusLarge),
     child: Container(
-      decoration: BoxDecoration(
+      decoration: KDecoration.cardDecoration.copyWith(
         color: cardColor,
         border: Border.all(color: Colors.grey[300]!, width: 2),
       ),
@@ -327,7 +357,9 @@ Widget _buildEventoCard({
           ),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 12),
+            padding: const EdgeInsets.symmetric(
+              vertical: KConstants.spacingMedium,
+            ),
             color: titleBarColor,
             child: Text(
               title,
@@ -346,14 +378,17 @@ Widget _buildEventoCard({
 }
 
 // Widget auxiliar para o botão "Show more"
-Widget _buildShowMoreButton(Color color) {
+Widget _buildShowMoreButton({
+  required Color color,
+  required VoidCallback onPressed,
+}) {
   return Align(
     alignment: Alignment.centerRight,
     child: TextButton(
-      onPressed: () {},
+      onPressed: onPressed,
       child: Text(
         "Show more",
-        style: TextStyle(color: color, fontWeight: FontWeight.bold),
+        style: KTextStyle.buttonTextPrimary.copyWith(color: color),
       ),
     ),
   );
