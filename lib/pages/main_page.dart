@@ -6,6 +6,7 @@ import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 import '../data/constants.dart';
 import 'home_page.dart';
+import 'article_create_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -42,6 +43,17 @@ class _MainPageState extends State<MainPage> {
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
       ),
+      floatingActionButton: _selectedIndex == 0
+          ? FloatingActionButton.extended(
+              onPressed: () async {
+                await Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const ArticleCreatePage()),
+                );
+              },
+              icon: const Icon(Icons.add),
+              label: const Text('Nova reportagem'),
+            )
+          : null,
     );
   }
 }

@@ -1,26 +1,8 @@
 import 'package:flutter/material.dart';
 import '../data/constants.dart';
-import 'package:url_launcher/url_launcher.dart';
-
-// Função assíncrona para lançar a URL
-Future<void> _launchURL(String url) async {
-  final Uri uri = Uri.parse(url);
-  if (!await launchUrl(uri)) {
-    // Se não conseguir abrir a URL, lança uma exceção (ou mostra um erro)
-    throw 'Não foi possível abrir $url';
-  }
-}
-
-// Esta função extrai o ID de uma URL comum do YouTube
-String? getYoutubeVideoId(String url) {
-  if (!url.contains("youtube.com/") && !url.contains("youtu.be/")) {
-    return null;
-  }
-  if (url.contains("youtu.be/")) {
-    return url.split("youtu.be/").last.split("?").first;
-  }
-  return url.split("v=").last.split("&").first;
-}
+import '../data/article.dart';
+import '../widgets/article_template.dart';
+import 'article_create_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -30,88 +12,107 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedTabIndex =
-      0; // 0 para "Próximos jogos", 1 para "Jogos finalizados"
+  final TextEditingController _searchController = TextEditingController();
+
+  // Dados de exemplo para as seções
+  final List<Article> _articles = [
+    Article(
+      title: 'Bem-vinda ao Passa a Bola',
+      subtitle: 'Comece criando sua primeira reportagem',
+      body:
+          'Use o botão "Nova reportagem" para adicionar uma matéria com imagem, título, subtítulo e texto.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1521417531039-55b8c7a7f2a9?q=80&w=1200&auto=format&fit=crop',
+      createdAt: DateTime.now(),
+    ),
+  ];
+
+  final List<Article> _destaques = [
+    Article(
+      title: '🏆 Campeãs da Temporada',
+      subtitle: 'Conheça as grandes vencedoras',
+      body:
+          'As atletas que se destacaram nesta temporada e conquistaram títulos importantes para o esporte feminino.',
+      imageUrl:
+          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=1200&auto=format&fit=crop',
+      createdAt: DateTime.now().subtract(const Duration(days: 1)),
+    ),
+  ];
+
+  final List<Map<String, dynamic>> _eventos = [
+    {
+      'titulo': 'Copa Feminina 2024',
+      'data': '15 de Março',
+      'local': 'Estádio Municipal',
+      'imagem':
+          'https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?q=80&w=1200&auto=format&fit=crop',
+    },
+    {
+      'titulo': 'Workshop de Futebol',
+      'data': '22 de Março',
+      'local': 'Centro Esportivo',
+      'imagem':
+          'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=1200&auto=format&fit=crop',
+    },
+  ];
+
+  final List<Map<String, dynamic>> _videos = [
+    {
+      'titulo': 'Técnicas de Chute',
+      'canal': 'Passa a Bola',
+      'visualizacoes': '15.2K',
+      'thumbnail':
+          'https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1200&auto=format&fit=crop',
+    },
+    {
+      'titulo': 'Preparação Física',
+      'canal': 'Passa a Bola',
+      'visualizacoes': '8.7K',
+      'thumbnail':
+          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=1200&auto=format&fit=crop',
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
-    // --- CORES LOCAIS ---
-    const Color corVerdePrincipal = KConstants.lightGreenColor;
-    const Color corVerdeClaro = Color(0xFF8EB479);
-    const Color corRosaCard = Color(0xFFE6C4C8);
-    const Color corRosaClaro = Color(0xFFF9F1F2);
+    final String query = _searchController.text.trim().toLowerCase();
+    final List<Article> filtered = _articles.where((a) {
+      if (query.isEmpty) return true;
+      return a.title.toLowerCase().contains(query) ||
+          a.subtitle.toLowerCase().contains(query) ||
+          a.body.toLowerCase().contains(query);
+    }).toList();
 
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(KConstants.spacingMedium),
+        padding: const EdgeInsets.all(KConstants.spacingLarge),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- BARRA DE PESQUISA ---
-            TextField(
-              style: KTextStyle.inputText,
-              decoration: InputDecoration(
-                hintText: "Pesquisar...",
-                hintStyle: KTextStyle.inputHintText,
-                prefixIcon: const Icon(
-                  Icons.search,
-                  color: KConstants.textSecondaryColor,
-                ),
-                filled: true,
-                fillColor: corRosaClaro,
-                contentPadding: const EdgeInsets.symmetric(vertical: 15),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: const BorderSide(color: corRosaCard, width: 1.5),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: const BorderSide(color: corRosaCard, width: 1.5),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: const BorderSide(
-                    color: Color.fromARGB(255, 230, 172, 178),
-                    width: 2,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: KConstants.spacingLarge),
-
-            // --- ABAS DE JOGOS ---
-            Row(
-              children: [
-                _buildTabItem("Próximos jogos", 0, corVerdePrincipal),
-                const SizedBox(width: KConstants.spacingLarge),
-                _buildTabItem("Jogos finalizados", 1, corVerdePrincipal),
-              ],
-            ),
-            const SizedBox(height: KConstants.spacingMedium),
-
-            // --- PLACEHOLDERS CINZAS ---
+            // Barra de pesquisa e botão de nova reportagem
             Row(
               children: [
                 Expanded(
-                  child: Container(
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: KConstants.surfaceColor.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(
-                        KConstants.borderRadiusMedium,
-                      ),
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (_) => setState(() {}),
+                    decoration: KInputDecoration.textFieldDecoration(
+                      hintText: 'Pesquisar reportagens...',
+                      prefixIcon: Icons.search,
                     ),
                   ),
                 ),
                 const SizedBox(width: KConstants.spacingMedium),
-                Expanded(
-                  child: Container(
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: KConstants.surfaceColor.withOpacity(0.3),
-                      borderRadius: BorderRadius.circular(
-                        KConstants.borderRadiusMedium,
-                      ),
+                TextButton.icon(
+                  onPressed: _onCreateArticle,
+                  icon: const Icon(Icons.add, color: KConstants.primaryColor),
+                  label: Text(
+                    'Nova reportagem',
+                    style: KTextStyle.buttonTextPrimary,
+                  ),
+                  style: ButtonStyle(
+                    overlayColor: WidgetStateProperty.all(
+                      KConstants.primaryColor.withOpacity(0.06),
                     ),
                   ),
                 ),
@@ -119,277 +120,197 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: KConstants.spacingLarge),
 
-            // --- SEÇÃO DESTAQUES ---
-            _SectionHeader(title: "Destaques", color: corVerdePrincipal),
+            // Seção Últimas Notícias
+            _buildSectionHeader('Últimas Notícias', Icons.article_outlined),
             const SizedBox(height: KConstants.spacingMedium),
-            _buildDestaqueCard(
-              imageUrl:
-                  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbziMhNtB0BukzUAZ7NIzEU9bUIWpBKHDh7A&s',
-              title: 'Lorem ipsum dolor sit amet',
-              description:
-                  'Lorem ipsum dolor sit amet consectetur adipiscing elit. Sit amet consectetur adipiscing elit quisque faucibus ex. Adipiscing elit quisque faucibus ex sapien vitae pellentesque.',
-              backgroundColor: corRosaCard,
-            ),
-            const SizedBox(height: KConstants.spacingLarge),
-
-            // --- SEÇÃO VÍDEOS EM ALTA ---
-            _SectionHeader(title: "Vídeos em alta", color: corVerdePrincipal),
-            const SizedBox(height: KConstants.spacingMedium),
-            _buildVideoCard(
-              title: "RETA FINAL DA GRAVIDEZ - FALA BEBÊ!",
-              backgroundColor: corVerdePrincipal,
-              youtubeUrl: videoUrl,
-            ),
-            _buildShowMoreButton(corVerdeClaro),
-            const SizedBox(height: 12),
-
-            // --- SEÇÃO EVENTOS ---
-            _SectionHeader(title: "Eventos", color: corVerdePrincipal),
-            const SizedBox(height: KConstants.spacingMedium),
-            _buildEventoCard(
-              imageUrl:
-                  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbziMhNtB0BukzUAZ7NIzEU9bUIWpBKHDh7A&s',
-              title: "TÍTULO DE EVENTO",
-              cardColor: corRosaClaro,
-              titleBarColor: corRosaCard,
-            ),
-            _buildShowMoreButton(corVerdeClaro),
-            const SizedBox(height: 12),
-
-            // --- SEÇÃO CAMPEÃS ---
-            _SectionHeader(title: "Campeãs", color: corVerdePrincipal),
-            const SizedBox(height: KConstants.spacingMedium),
-            _buildDestaqueCard(
-              imageUrl:
-                  'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbziMhNtB0BukzUAZ7NIzEU9bUIWpBKHDh7A&s',
-              title: '🏆 CAMPEÃS',
-              isTitleBold: true,
-              description:
-                  'Lorem ipsum dolor sit amet consectetur adipiscing elit. Sit amet consectetur adipiscing elit quisque faucibus ex. Adipiscing elit quisque faucibus ex sapien vitae pellentesque.',
-              backgroundColor: corRosaCard,
-            ),
-            const SizedBox(height: KConstants.spacingLarge),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Widget auxiliar para os itens da aba
-  Widget _buildTabItem(String text, int index, Color selectedColor) {
-    final isSelected = _selectedTabIndex == index;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedTabIndex = index),
-      child: IntrinsicWidth(
-        // 👈 mede pela largura do texto
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              text,
-              style: isSelected
-                  ? KTextStyle.navigationText.copyWith(
-                      color: selectedColor,
-                      fontWeight: FontWeight.bold,
-                    )
-                  : KTextStyle.navigationText,
-            ),
-            const SizedBox(height: KConstants.spacingExtraSmall),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              height: isSelected ? 3 : 0,
-              width: double.infinity, // 👈 vira “100% do texto”
-              decoration: BoxDecoration(
-                color: selectedColor,
-                borderRadius: BorderRadius.circular(
-                  KConstants.borderRadiusSmall,
+            ...filtered.map((a) => ArticleTemplate(article: a)).toList(),
+            if (filtered.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: KConstants.spacingLarge),
+                child: Center(
+                  child: Text(
+                    'Nenhuma reportagem encontrada',
+                    style: KTextStyle.bodySecondaryText,
+                  ),
                 ),
               ),
-            ),
+            const SizedBox(height: KConstants.spacingExtraLarge),
+
+            // Seção Destaques
+            _buildSectionHeader('Destaques', Icons.star_outline),
+            const SizedBox(height: KConstants.spacingMedium),
+            ..._destaques.map((a) => ArticleTemplate(article: a)).toList(),
+            const SizedBox(height: KConstants.spacingExtraLarge),
+
+            // Seção Novos Eventos
+            _buildSectionHeader('Novos Eventos', Icons.event_outlined),
+            const SizedBox(height: KConstants.spacingMedium),
+            ..._eventos.map((evento) => _buildEventCard(evento)).toList(),
+            const SizedBox(height: KConstants.spacingExtraLarge),
+
+            // Seção Últimos Vídeos
+            _buildSectionHeader('Últimos Vídeos', Icons.play_circle_outline),
+            const SizedBox(height: KConstants.spacingMedium),
+            ..._videos.map((video) => _buildVideoCard(video)).toList(),
+            const SizedBox(height: KConstants.spacingLarge),
           ],
         ),
       ),
     );
   }
-}
 
-// Widget auxiliar para os cabeçalhos de seção
-class _SectionHeader extends StatelessWidget {
-  final String title;
-  final Color color;
-  const _SectionHeader({required this.title, required this.color});
+  void _onCreateArticle() async {
+    final result = await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const ArticleCreatePage()));
+    if (result is Article) {
+      setState(() {
+        _articles.insert(0, result);
+      });
+    }
+  }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildSectionHeader(String title, IconData icon) {
     return Row(
       children: [
-        Container(
-          width: 5,
-          height: 20,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(KConstants.borderRadiusMedium),
-          ),
-        ),
+        Icon(icon, color: KConstants.primaryColor, size: 24),
         const SizedBox(width: KConstants.spacingSmall),
-        Text(title, style: KTextStyle.titleText),
+        Text(
+          title,
+          style: KTextStyle.titleText.copyWith(color: KConstants.primaryColor),
+        ),
       ],
     );
   }
-}
 
-// Widget auxiliar para os cards de "Destaques" e "Campeãs"
-Widget _buildDestaqueCard({
-  required String imageUrl,
-  required String title,
-  required String description,
-  required Color backgroundColor,
-  bool isTitleBold = false,
-}) {
-  return Container(
-    decoration: KDecoration.cardDecoration.copyWith(color: backgroundColor),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-          child: Image.network(
-            imageUrl,
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: 180,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(KConstants.spacingMedium),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: isTitleBold ? FontWeight.bold : FontWeight.w600,
-                  color: Colors.black,
-                ),
-              ),
-              const Divider(color: Colors.black54, thickness: 1, height: 20),
-              Text(
-                description,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.black87,
-                  height: 1.4,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-// Widget auxiliar para o card de "Vídeos em alta"
-Widget _buildVideoCard({
-  required String title,
-  required Color backgroundColor,
-}) {
-  return Column(
-    children: [
-      Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-        ),
-        child: Text(
-          title,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-      Container(
-        height: 180,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: Colors.grey[300],
-          borderRadius: const BorderRadius.vertical(
-            bottom: Radius.circular(15),
-          ),
-        ),
-        child: const Icon(
-          Icons.play_circle_fill,
-          color: Colors.white,
-          size: 60,
-        ),
-      ),
-    ],
-  );
-}
-
-// Widget auxiliar para o card de "Eventos"
-Widget _buildEventoCard({
-  required String imageUrl,
-  required String title,
-  required Color cardColor,
-  required Color titleBarColor,
-}) {
-  return ClipRRect(
-    borderRadius: BorderRadius.circular(KConstants.borderRadiusLarge),
-    child: Container(
-      decoration: KDecoration.cardDecoration.copyWith(
-        color: cardColor,
-        border: Border.all(color: Colors.grey[300]!, width: 2),
-      ),
+  Widget _buildEventCard(Map<String, dynamic> evento) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: KConstants.spacingMedium),
+      decoration: KDecoration.cardDecoration,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Image.network(
-            imageUrl,
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: 180,
-          ),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(
-              vertical: KConstants.spacingMedium,
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            child: Image.network(
+              evento['imagem'],
+              height: 160,
+              width: double.infinity,
+              fit: BoxFit.cover,
             ),
-            color: titleBarColor,
-            child: Text(
-              title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.black,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(KConstants.spacingMedium),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(evento['titulo'], style: KTextStyle.cardTitleText),
+                const SizedBox(height: KConstants.spacingSmall),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.calendar_today,
+                      size: 16,
+                      color: KConstants.textSecondaryColor,
+                    ),
+                    const SizedBox(width: KConstants.spacingExtraSmall),
+                    Text(evento['data'], style: KTextStyle.cardSubtitleText),
+                    const SizedBox(width: KConstants.spacingMedium),
+                    Icon(
+                      Icons.location_on,
+                      size: 16,
+                      color: KConstants.textSecondaryColor,
+                    ),
+                    const SizedBox(width: KConstants.spacingExtraSmall),
+                    Expanded(
+                      child: Text(
+                        evento['local'],
+                        style: KTextStyle.cardSubtitleText,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ],
       ),
-    ),
-  );
-}
+    );
+  }
 
-// Widget auxiliar para o botão "Show more"
-Widget _buildShowMoreButton({
-  required Color color,
-  required VoidCallback onPressed,
-}) {
-  return Align(
-    alignment: Alignment.centerRight,
-    child: TextButton(
-      onPressed: onPressed,
-      child: Text(
-        "Show more",
-        style: KTextStyle.buttonTextPrimary.copyWith(color: color),
+  Widget _buildVideoCard(Map<String, dynamic> video) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: KConstants.spacingMedium),
+      decoration: KDecoration.cardDecoration,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(12),
+                ),
+                child: Image.network(
+                  video['thumbnail'],
+                  height: 160,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              Positioned.fill(
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.6),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.play_arrow,
+                      color: Colors.white,
+                      size: 32,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.all(KConstants.spacingMedium),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(video['titulo'], style: KTextStyle.cardTitleText),
+                const SizedBox(height: KConstants.spacingSmall),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.play_circle_outline,
+                      size: 16,
+                      color: KConstants.textSecondaryColor,
+                    ),
+                    const SizedBox(width: KConstants.spacingExtraSmall),
+                    Text(video['canal'], style: KTextStyle.cardSubtitleText),
+                    const Spacer(),
+                    Icon(
+                      Icons.visibility,
+                      size: 16,
+                      color: KConstants.textSecondaryColor,
+                    ),
+                    const SizedBox(width: KConstants.spacingExtraSmall),
+                    Text(
+                      video['visualizacoes'],
+                      style: KTextStyle.cardSubtitleText,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
-    ),
-  );
+    );
+  }
 }
