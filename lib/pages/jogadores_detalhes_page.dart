@@ -1,12 +1,53 @@
 import 'package:flutter/material.dart';
 import '../data/constants.dart';
-import '../models/jogo_models.dart';
+
+// Uma classe simples para representar a posição de um jogador no campo.
+// As coordenadas X e Y são em porcentagem (de 0.0 a 1.0).
+class PlayerPosition {
+  final double x; // Posição horizontal (0.0 = esquerda, 1.0 = direita)
+  final double y; // Posição vertical (0.0 = topo, 1.0 = baixo)
+
+  const PlayerPosition(this.x, this.y);
+}
+
+const List<PlayerPosition> formation433 = [
+  // Goleiro
+  PlayerPosition(0.5, 0.9),
+  // Defensores
+  PlayerPosition(0.15, 0.75),
+  PlayerPosition(0.4, 0.78),
+  PlayerPosition(0.6, 0.78),
+  PlayerPosition(0.85, 0.75),
+  // Meio-campistas
+  PlayerPosition(0.25, 0.5),
+  PlayerPosition(0.5, 0.55),
+  PlayerPosition(0.75, 0.5),
+  // Atacantes
+  PlayerPosition(0.2, 0.25),
+  PlayerPosition(0.5, 0.2),
+  PlayerPosition(0.8, 0.25),
+];
+
+const List<PlayerPosition> formation442 = [
+  // Goleiro
+  PlayerPosition(0.5, 0.9),
+  // Defensores
+  PlayerPosition(0.15, 0.75),
+  PlayerPosition(0.4, 0.78),
+  PlayerPosition(0.6, 0.78),
+  PlayerPosition(0.85, 0.75),
+  // Meio-campistas
+  PlayerPosition(0.1, 0.5),
+  PlayerPosition(0.4, 0.45),
+  PlayerPosition(0.6, 0.45),
+  PlayerPosition(0.9, 0.5),
+  // Atacantes
+  PlayerPosition(0.35, 0.25),
+  PlayerPosition(0.65, 0.25),
+];
 
 class JogosDetalhesPage extends StatelessWidget {
-  // Recebe o objeto 'Jogo' completo da tela anterior
-  final Jogo jogo;
-
-  const JogosDetalhesPage({super.key, required this.jogo});
+  const JogosDetalhesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -25,22 +66,23 @@ class JogosDetalhesPage extends StatelessWidget {
             padding: const EdgeInsets.all(KConstants.spacingSmall),
             decoration: KDecoration.cardDecoration.copyWith(
               color: KConstants.primaryColor,
-              borderRadius: BorderRadius.circular(KConstants.borderRadiusExtraLarge),
+              borderRadius: BorderRadius.circular(
+                KConstants.borderRadiusExtraLarge,
+              ),
             ),
             child: Column(
               children: [
-                // Card para o time da casa, usando os dados do objeto 'jogo'
+                // Agora passamos a formação como um parâmetro
                 _TeamFormationCard(
-                  teamName: jogo.timeCasa.nome,
+                  teamName: 'NOME DO TIME',
                   playerColor: Colors.red,
-                  formation: jogo.timeCasa.formacao,
+                  formation: formation433,
                 ),
                 const SizedBox(height: KConstants.spacingMedium),
-                // Card para o time de fora, usando os dados do objeto 'jogo'
                 _TeamFormationCard(
-                  teamName: jogo.timeFora.nome,
+                  teamName: 'NOME DO TIME',
                   playerColor: Colors.blue,
-                  formation: jogo.timeFora.formacao,
+                  formation: formation442,
                 ),
               ],
             ),
@@ -51,7 +93,6 @@ class JogosDetalhesPage extends StatelessWidget {
   }
 }
 
-// Widget para o Card de Formação do Time
 class _TeamFormationCard extends StatelessWidget {
   final String teamName;
   final Color playerColor;
@@ -66,7 +107,7 @@ class _TeamFormationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const statsPillColor = KConstants.lightGreenColor;
-    const double playerDotSize = 30.0; // Tamanho das "bolas" dos jogadores
+    const double playerDotSize = 42.0;
 
     return Container(
       decoration: KDecoration.cardDecoration.copyWith(
@@ -77,25 +118,34 @@ class _TeamFormationCard extends StatelessWidget {
           // Header do time
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: KConstants.spacingSmall),
+            padding: const EdgeInsets.symmetric(
+              vertical: KConstants.spacingSmall,
+            ),
             decoration: BoxDecoration(
               color: KConstants.secondaryColor,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(KConstants.borderRadiusLarge)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(KConstants.borderRadiusLarge),
+              ),
             ),
             child: Text(
               teamName,
               textAlign: TextAlign.center,
-              style: KTextStyle.cardTitleText.copyWith(color: KConstants.textLightColor),
+              style: KTextStyle.cardTitleText.copyWith(
+                color: KConstants.textLightColor,
+              ),
             ),
           ),
           // Campo com os jogadores
           Padding(
             padding: const EdgeInsets.all(KConstants.spacingSmall),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(KConstants.borderRadiusMedium),
+              borderRadius: BorderRadius.circular(
+                KConstants.borderRadiusMedium,
+              ),
               child: AspectRatio(
                 aspectRatio: 2 / 3,
                 child: LayoutBuilder(
+                  // <-- LayoutBuilder para obter o tamanho exato do campo
                   builder: (context, constraints) {
                     return Stack(
                       children: [
@@ -106,12 +156,20 @@ class _TeamFormationCard extends StatelessWidget {
                           width: double.infinity,
                           height: double.infinity,
                         ),
-                        // Gera os jogadores dinamicamente a partir da lista de formação
+                        // Geramos os jogadores dinamicamente a partir da lista
                         ...formation.map((pos) {
                           return Positioned(
-                            top: constraints.maxHeight * pos.y - (playerDotSize / 2),
-                            left: constraints.maxWidth * pos.x - (playerDotSize / 2),
-                            child: _PlayerDot(color: playerColor, size: playerDotSize),
+                            // Calculamos a posição exata baseada na porcentagem e no tamanho do campo
+                            top:
+                                constraints.maxHeight * pos.y -
+                                (playerDotSize / 2),
+                            left:
+                                constraints.maxWidth * pos.x -
+                                (playerDotSize / 2),
+                            child: _PlayerDot(
+                              color: playerColor,
+                              size: playerDotSize,
+                            ),
                           );
                         }).toList(),
                       ],
@@ -127,19 +185,19 @@ class _TeamFormationCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _StatsPill(label: 'Faltas: 0', color: statsPillColor),
-                _StatsPill(label: 'Pênalti: 0', color: statsPillColor),
-                _StatsPill(label: 'Passes: 0', color: statsPillColor),
+                _StatsPill(label: 'Faltas: -----', color: statsPillColor),
+                _StatsPill(label: 'Pênalti: -----', color: statsPillColor),
+                _StatsPill(label: 'Passes: -----', color: statsPillColor),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
   }
 }
 
-// Widget auxiliar para o ponto do jogador
+// Widget auxiliar para o ponto do jogador (agora simplificado)
 class _PlayerDot extends StatelessWidget {
   final Color color;
   final double size;
@@ -159,10 +217,14 @@ class _PlayerDot extends StatelessWidget {
           BoxShadow(
             color: Colors.black.withOpacity(0.3),
             blurRadius: 3,
-            offset: const Offset(0, 1)
-          )
-        ]
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
+      // No futuro, trocar o Container por um CircleAvatar com a foto da jogadora
+      // child: CircleAvatar(
+      //   backgroundImage: NetworkImage('URL_DA_FOTO_DA_JOGADORA'),
+      // ),
     );
   }
 }
@@ -187,8 +249,9 @@ class _StatsPill extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: KTextStyle.smallText.copyWith(
+        style: KTextStyle.captionText.copyWith(
           color: KConstants.textLightColor,
+          fontSize: 15.0,
         ),
       ),
     );

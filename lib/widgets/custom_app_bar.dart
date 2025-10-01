@@ -16,16 +16,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       backgroundColor: backgroundColor,
       elevation: 0,
-      leading: IconButton(
-        icon: Icon(
-          Icons.menu, 
-          color: KConstants.textLightColor, 
-          size: 30
-        ),
-        onPressed: () {
-          // Lógica para abrir o menu lateral (Drawer), se houver.
-        },
-      ),
       title: Text(
         title,
         style: KTextStyle.titleText.copyWith(

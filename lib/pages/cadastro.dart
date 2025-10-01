@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../data/constants.dart';
 import 'main_page.dart';
 
@@ -32,15 +34,33 @@ class _CadastroPageState extends State<CadastroPage> {
         _isLoading = true;
       });
 
-      // Simular delay de cadastro
-      await Future.delayed(const Duration(seconds: 2));
+      try {
+        final String name = _nameController.text.trim();
+        final String email = _emailController.text.trim();
+        final String password = _passwordController.text.trim();
+        // 1) Cria o usuário de autenticação
+        final UserCredential credential = await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(email: email, password: password);
 
-      setState(() {
-        _isLoading = false;
-      });
+        final User? user = credential.user;
 
-      // Mostrar mensagem de sucesso
-      if (mounted) {
+        // 2) Atualiza o displayName
+        if (user != null) {
+          await user.updateDisplayName(name);
+        }
+
+        // 3) Cria/atualiza documento do usuário no Firestore
+        final String uid = user?.uid ?? '';
+        await FirebaseFirestore.instance.collection('usuarios').doc(uid).set({
+          'uid': uid,
+          'name': name,
+          'email': email,
+          'createdAt': FieldValue.serverTimestamp(),
+          'isRegistered': false,
+        }, SetOptions(merge: true));
+
+        if (!mounted) return;
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Cadastro realizado com sucesso!'),
@@ -48,10 +68,38 @@ class _CadastroPageState extends State<CadastroPage> {
           ),
         );
 
-        // Navegar para a página principal
+        // Navega para a página principal
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const MainPage()),
         );
+      } on FirebaseAuthException catch (e) {
+        String message = 'Erro ao cadastrar';
+        if (e.code == 'email-already-in-use') {
+          message = 'Email já está em uso';
+        } else if (e.code == 'invalid-email') {
+          message = 'Email inválido';
+        } else if (e.code == 'weak-password') {
+          message = 'Senha fraca (mínimo 6 caracteres)';
+        }
+
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message), backgroundColor: Colors.red),
+        );
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Falha inesperada: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
   }
