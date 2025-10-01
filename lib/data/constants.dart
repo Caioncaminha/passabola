@@ -211,7 +211,7 @@ class KDecoration {
     borderRadius: BorderRadius.circular(KConstants.borderRadiusMedium),
     boxShadow: [
       BoxShadow(
-        color: Colors.black.withOpacity(0.1),
+        color: Colors.black.withValues(alpha: 0.1),
         blurRadius: 4,
         offset: const Offset(0, 2),
       ),
@@ -223,7 +223,7 @@ class KDecoration {
     borderRadius: BorderRadius.circular(KConstants.borderRadiusLarge),
     boxShadow: [
       BoxShadow(
-        color: Colors.black.withOpacity(0.08),
+        color: Colors.black.withValues(alpha: 0.08),
         blurRadius: 8,
         offset: const Offset(0, 4),
       ),
@@ -233,7 +233,7 @@ class KDecoration {
   static BoxDecoration inputDecoration = BoxDecoration(
     color: KConstants.backgroundColor,
     borderRadius: BorderRadius.circular(KConstants.borderRadiusMedium),
-    border: Border.all(color: KConstants.surfaceColor.withOpacity(0.3)),
+    border: Border.all(color: KConstants.surfaceColor.withValues(alpha: 0.3)),
   );
 
   static BoxDecoration buttonDecoration = BoxDecoration(
@@ -270,11 +270,15 @@ class KInputDecoration {
       fillColor: KConstants.backgroundColor,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(KConstants.borderRadiusMedium),
-        borderSide: BorderSide(color: KConstants.surfaceColor.withOpacity(0.3)),
+        borderSide: BorderSide(
+          color: KConstants.surfaceColor.withValues(alpha: 0.3),
+        ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(KConstants.borderRadiusMedium),
-        borderSide: BorderSide(color: KConstants.surfaceColor.withOpacity(0.3)),
+        borderSide: BorderSide(
+          color: KConstants.surfaceColor.withValues(alpha: 0.3),
+        ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(KConstants.borderRadiusMedium),

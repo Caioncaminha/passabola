@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:passaabola/data/constants.dart';
+import '../data/auth_roles.dart';
+import 'jogadora_dashboard_page.dart';
 
 /// PÁGINA DE JOGADORAS DE UM TIME ESPECÍFICO
 ///
@@ -298,6 +300,26 @@ class _JogadorasTimePageState extends State<JogadorasTimePage> {
 
         // Seta indicando que é clicável (para futuras funcionalidades)
         trailing: const Icon(Icons.arrow_forward_ios),
+        onTap: () async {
+          // Apenas olheiro pode abrir a dashboard detalhada
+          final role = await RoleService().getCurrentUserRole();
+          if (role == UserRole.olheiro) {
+            if (!context.mounted) return;
+            await Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => JogadoraDashboardPage(playerData: playerData),
+              ),
+            );
+          } else {
+            if (!context.mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Recurso disponível apenas para olheiros.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
       ),
     );
   }

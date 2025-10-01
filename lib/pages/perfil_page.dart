@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:passaabola/pages/login_page.dart';
 import '../data/constants.dart';
 import 'dart:io';
+import '../data/auth_roles.dart';
 
 class PerfilPage extends StatefulWidget {
   const PerfilPage({super.key});
@@ -20,6 +21,7 @@ class _PerfilPageState extends State<PerfilPage> {
   final _emailController = TextEditingController();
   final _usernameController = TextEditingController();
   String? _userId; // UID do usuário atual
+  String? _userRole;
   bool _isLoading = false;
   bool _isRegistered = false;
   bool _isCheckingRegistration = true;
@@ -39,9 +41,11 @@ class _PerfilPageState extends State<PerfilPage> {
     try {
       // Obter o UID do usuário atual do Firebase Auth
       final user = FirebaseAuth.instance.currentUser;
-
       if (user != null) {
         _userId = user.uid;
+        // Carrega role do usuário
+        final roleEnum = await RoleService().getCurrentUserRole();
+        _userRole = roleEnum.name;
 
         DocumentSnapshot userDoc = await FirebaseFirestore.instance
             .collection('jogadoras')
@@ -70,6 +74,7 @@ class _PerfilPageState extends State<PerfilPage> {
           _isRegistered = false;
           _userData = null;
           _isCheckingRegistration = false;
+          _userRole = null;
         });
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const LoginPage()),
@@ -81,6 +86,7 @@ class _PerfilPageState extends State<PerfilPage> {
         _isRegistered = false;
         _userData = null;
         _isCheckingRegistration = false;
+        _userRole = null;
       });
     }
   }
@@ -148,7 +154,7 @@ class _PerfilPageState extends State<PerfilPage> {
                     height: 200,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                     ),
                   ),
                 ),
@@ -160,7 +166,7 @@ class _PerfilPageState extends State<PerfilPage> {
                     height: 150,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                     ),
                   ),
                 ),
@@ -183,6 +189,7 @@ class _PerfilPageState extends State<PerfilPage> {
                                 size: 28,
                               ),
                             ),
+
                             IconButton(
                               onPressed: _logout,
                               icon: const Icon(
@@ -202,14 +209,16 @@ class _PerfilPageState extends State<PerfilPage> {
                             children: [
                               CircleAvatar(
                                 radius: 60,
-                                backgroundColor: Colors.white.withOpacity(0.2),
+                                backgroundColor: Colors.white.withValues(
+                                  alpha: 0.2,
+                                ),
                                 child: CircleAvatar(
                                   radius: 55,
                                   backgroundColor: Colors.white,
                                   child: CircleAvatar(
                                     radius: 50,
                                     backgroundColor: KConstants.primaryColor
-                                        .withOpacity(0.1),
+                                        .withValues(alpha: 0.1),
                                     backgroundImage: _profileImageUrl != null
                                         ? NetworkImage(_profileImageUrl!)
                                         : null,
@@ -269,7 +278,7 @@ class _PerfilPageState extends State<PerfilPage> {
                             vertical: KConstants.spacingSmall,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
@@ -353,10 +362,7 @@ class _PerfilPageState extends State<PerfilPage> {
                   icon: Icons.analytics,
                   title: 'Estatísticas',
                   children: [
-                    _buildInfoRow(
-                      'Método de Cadastro',
-                      _userData?['registrationMethod'] ?? 'Manual',
-                    ),
+                    _buildInfoRow('Papel', _userRole ?? 'Não informado'),
                     _buildInfoRow(
                       'Data de Cadastro',
                       _formatDate(_userData?['registrationDate']),
@@ -377,20 +383,6 @@ class _PerfilPageState extends State<PerfilPage> {
                   title: 'Editar Perfil',
                   subtitle: 'Atualizar suas informações',
                   onTap: () => _showEditProfileDialog(),
-                ),
-                SizedBox(height: KConstants.spacingMedium),
-                _buildActionButton(
-                  icon: Icons.notifications,
-                  title: 'Notificações',
-                  subtitle: 'Gerenciar alertas',
-                  onTap: () {},
-                ),
-                SizedBox(height: KConstants.spacingMedium),
-                _buildActionButton(
-                  icon: Icons.privacy_tip,
-                  title: 'Privacidade',
-                  subtitle: 'Configurações de privacidade',
-                  onTap: () {},
                 ),
                 SizedBox(height: KConstants.spacingLarge),
               ],
@@ -556,7 +548,7 @@ class _PerfilPageState extends State<PerfilPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -570,7 +562,7 @@ class _PerfilPageState extends State<PerfilPage> {
               Container(
                 padding: EdgeInsets.all(KConstants.spacingSmall),
                 decoration: BoxDecoration(
-                  color: KConstants.primaryColor.withOpacity(0.1),
+                  color: KConstants.primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(icon, color: KConstants.primaryColor, size: 20),
@@ -633,12 +625,12 @@ class _PerfilPageState extends State<PerfilPage> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: KConstants.primaryColor.withOpacity(0.2),
+            color: KConstants.primaryColor.withValues(alpha: 0.2),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -649,7 +641,7 @@ class _PerfilPageState extends State<PerfilPage> {
             Container(
               padding: EdgeInsets.all(KConstants.spacingMedium),
               decoration: BoxDecoration(
-                color: KConstants.primaryColor.withOpacity(0.1),
+                color: KConstants.primaryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: KConstants.primaryColor, size: 24),
@@ -701,6 +693,9 @@ class _PerfilPageState extends State<PerfilPage> {
 
   Future<void> _logout() async {
     try {
+      // Limpar cache de roles antes do logout
+      RoleService.clearAllCaches();
+
       await FirebaseAuth.instance.signOut();
       if (mounted) {
         Navigator.of(context).pushReplacement(
@@ -1085,12 +1080,12 @@ class _RegistrationOptionCard extends StatelessWidget {
           color: KConstants.backgroundColor,
           borderRadius: BorderRadius.circular(KConstants.borderRadiusLarge),
           border: Border.all(
-            color: KConstants.primaryColor.withOpacity(0.3),
+            color: KConstants.primaryColor.withValues(alpha: 0.3),
             width: 2,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -1101,7 +1096,7 @@ class _RegistrationOptionCard extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(KConstants.spacingMedium),
               decoration: BoxDecoration(
-                color: KConstants.primaryColor.withOpacity(0.1),
+                color: KConstants.primaryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(
                   KConstants.borderRadiusMedium,
                 ),
@@ -1710,7 +1705,7 @@ class _QuizDialogState extends State<_QuizDialog> {
               SizedBox(height: KConstants.spacingSmall),
               LinearProgressIndicator(
                 value: (_currentQuestion + 1) / _totalQuestions,
-                backgroundColor: KConstants.surfaceColor.withOpacity(0.3),
+                backgroundColor: KConstants.surfaceColor.withValues(alpha: 0.3),
                 valueColor: AlwaysStoppedAnimation<Color>(
                   KConstants.primaryColor,
                 ),
@@ -2142,7 +2137,7 @@ class _SettingsDialog extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(KConstants.spacingLarge),
               decoration: BoxDecoration(
-                color: KConstants.primaryColor.withOpacity(0.1),
+                color: KConstants.primaryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(

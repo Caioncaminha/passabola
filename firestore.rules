@@ -39,5 +39,47 @@ service cloud.firestore {
                     request.resource.data.registrationMethod is string &&
                     request.auth.uid == userId;
     }
+
+    // ---- Coleção de Artigos ----
+    match /articles/{articleId} {
+      // Qualquer usuário autenticado pode ler artigos publicados
+      allow read: if request.auth != null && 
+                     (resource.data.isPublished == true || 
+                      request.auth.uid == resource.data.authorId);
+      
+      // Apenas o autor pode criar, atualizar ou deletar seus artigos
+      allow create: if request.auth != null && 
+                       request.auth.uid == request.resource.data.authorId &&
+                       request.resource.data.keys().hasAll([
+                         "title", "content", "authorId", "authorName", 
+                         "createdAt", "updatedAt", "isPublished", "tags", "views"
+                       ]) &&
+                       request.resource.data.title is string &&
+                       request.resource.data.content is string &&
+                       request.resource.data.authorId is string &&
+                       request.resource.data.authorName is string &&
+                       request.resource.data.createdAt is timestamp &&
+                       request.resource.data.updatedAt is timestamp &&
+                       request.resource.data.isPublished is bool &&
+                       request.resource.data.tags is list &&
+                       request.resource.data.views is number;
+      
+      allow update: if request.auth != null && 
+                       request.auth.uid == resource.data.authorId;
+      
+      allow delete: if request.auth != null && 
+                       request.auth.uid == resource.data.authorId;
+    }
+
+    // ---- Coleção de Avisos (para futuras implementações) ----
+    match /announcements/{announcementId} {
+      // Qualquer usuário autenticado pode ler avisos
+      allow read: if request.auth != null;
+      
+      // Apenas admins podem criar, atualizar ou deletar avisos
+      allow create, update, delete: if request.auth != null && 
+                                      exists(/databases/$(database)/documents/usuarios/$(request.auth.uid)) &&
+                                      get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'admin';
+    }
   }
 }
