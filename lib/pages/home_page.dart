@@ -3,6 +3,7 @@ import '../data/constants.dart';
 import '../data/article.dart';
 import '../widgets/article_template.dart';
 import 'article_create_page.dart';
+import 'videos_player_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -55,22 +56,22 @@ class _HomePageState extends State<HomePage> {
           'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=1200&auto=format&fit=crop',
     },
   ];
-
+  
   final List<Map<String, dynamic>> _videos = [
-    {
-      'titulo': 'Técnicas de Chute',
-      'canal': 'Passa a Bola',
-      'visualizacoes': '15.2K',
-      'thumbnail':
-          'https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1200&auto=format&fit=crop',
-    },
-    {
-      'titulo': 'Preparação Física',
-      'canal': 'Passa a Bola',
-      'visualizacoes': '8.7K',
-      'thumbnail':
-          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=1200&auto=format&fit=crop',
-    },
+      {
+        'titulo': 'PABCAST CONVIDA: KETLEN WIGGERS - FALA, BEBÊ #40',
+        'canal': 'Passa a Bola',
+        'visualizacoes': '1.4K',
+        'thumbnail': 'https://img.youtube.com/vi/OwIKvXW6aYU/hqdefault.jpg',
+        'videoId': 'OwIKvXW6aYU', // <- ID DO VÍDEO
+      },
+      {
+        'titulo': 'COMO TEM SIDO NOSSOS PRIMEIROS MESES? - FALA, BEBÊ #39',
+        'canal': 'Passa a Bola',
+        'visualizacoes': '1.9K',
+        'thumbnail': 'https://img.youtube.com/vi/pr4wX4hCVLs/hqdefault.jpg',
+        'videoId': 'pr4wX4hCVLs', // <- ID DO VÍDEO
+      },
   ];
 
   final List<Map<String, dynamic>> _campeonatos = [
@@ -308,76 +309,89 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildVideoCard(Map<String, dynamic> video) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: KConstants.spacingMedium),
-      decoration: KDecoration.cardDecoration,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(12),
+    // Envolvemos o card com InkWell para dar um efeito de clique
+    // e a funcionalidade de navegação.
+    return InkWell(
+      onTap: () {
+        // Ação de clique: navegar para a página do player
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => VideoPlayerPage(videoId: video['videoId']),
+          ),
+        );
+      },
+      borderRadius: BorderRadius.circular(12), // Para o efeito de clique ter bordas arredondadas
+      child: Container(
+        margin: const EdgeInsets.only(bottom: KConstants.spacingMedium),
+        decoration: KDecoration.cardDecoration,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(12),
+                  ),
+                  child: Image.network(
+                    video['thumbnail'],
+                    height: 160,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
                 ),
-                child: Image.network(
-                  video['thumbnail'],
-                  height: 160,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              Positioned.fill(
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.6),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.play_arrow,
-                      color: Colors.white,
-                      size: 32,
+                Positioned.fill(
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.6),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.play_arrow,
+                        color: Colors.white,
+                        size: 32,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.all(KConstants.spacingMedium),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(video['titulo'], style: KTextStyle.cardTitleText),
-                const SizedBox(height: KConstants.spacingSmall),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.play_circle_outline,
-                      size: 16,
-                      color: KConstants.textSecondaryColor,
-                    ),
-                    const SizedBox(width: KConstants.spacingExtraSmall),
-                    Text(video['canal'], style: KTextStyle.cardSubtitleText),
-                    const Spacer(),
-                    Icon(
-                      Icons.visibility,
-                      size: 16,
-                      color: KConstants.textSecondaryColor,
-                    ),
-                    const SizedBox(width: KConstants.spacingExtraSmall),
-                    Text(
-                      video['visualizacoes'],
-                      style: KTextStyle.cardSubtitleText,
-                    ),
-                  ],
-                ),
               ],
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.all(KConstants.spacingMedium),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(video['titulo'], style: KTextStyle.cardTitleText),
+                  const SizedBox(height: KConstants.spacingSmall),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.play_circle_outline,
+                        size: 16,
+                        color: KConstants.textSecondaryColor,
+                      ),
+                      const SizedBox(width: KConstants.spacingExtraSmall),
+                      Text(video['canal'], style: KTextStyle.cardSubtitleText),
+                      const Spacer(),
+                      Icon(
+                        Icons.visibility,
+                        size: 16,
+                        color: KConstants.textSecondaryColor,
+                      ),
+                      const SizedBox(width: KConstants.spacingExtraSmall),
+                      Text(
+                        video['visualizacoes'],
+                        style: KTextStyle.cardSubtitleText,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
