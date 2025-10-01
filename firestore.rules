@@ -42,33 +42,8 @@ service cloud.firestore {
 
     // ---- Coleção de Artigos ----
     match /articles/{articleId} {
-      // Qualquer usuário autenticado pode ler artigos publicados
-      allow read: if request.auth != null && 
-                     (resource.data.isPublished == true || 
-                      request.auth.uid == resource.data.authorId);
-      
-      // Apenas o autor pode criar, atualizar ou deletar seus artigos
-      allow create: if request.auth != null && 
-                       request.auth.uid == request.resource.data.authorId &&
-                       request.resource.data.keys().hasAll([
-                         "title", "content", "authorId", "authorName", 
-                         "createdAt", "updatedAt", "isPublished", "tags", "views"
-                       ]) &&
-                       request.resource.data.title is string &&
-                       request.resource.data.content is string &&
-                       request.resource.data.authorId is string &&
-                       request.resource.data.authorName is string &&
-                       request.resource.data.createdAt is timestamp &&
-                       request.resource.data.updatedAt is timestamp &&
-                       request.resource.data.isPublished is bool &&
-                       request.resource.data.tags is list &&
-                       request.resource.data.views is number;
-      
-      allow update: if request.auth != null && 
-                       request.auth.uid == resource.data.authorId;
-      
-      allow delete: if request.auth != null && 
-                       request.auth.uid == resource.data.authorId;
+      // Qualquer usuário autenticado pode ler, criar, atualizar e deletar artigos
+      allow read, write: if request.auth != null;
     }
 
     // ---- Coleção de Avisos (para futuras implementações) ----

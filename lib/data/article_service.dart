@@ -49,24 +49,31 @@ class ArticleService {
     return _firestore
         .collection(_collection)
         .where('isPublished', isEqualTo: true)
-        .orderBy('createdAt', descending: true)
         .snapshots()
-        .map(
-          (snapshot) =>
-              snapshot.docs.map((doc) => Article.fromFirestore(doc)).toList(),
-        );
+        .map((snapshot) {
+          final articles = snapshot.docs
+              .map((doc) => Article.fromFirestore(doc))
+              .toList();
+
+          // Ordenar por data de criação (mais recente primeiro)
+          articles.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+          return articles;
+        });
   }
 
   /// Obter todos os artigos (incluindo não publicados) - apenas para admins
   static Stream<List<Article>> getAllArticles() {
-    return _firestore
-        .collection(_collection)
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .map(
-          (snapshot) =>
-              snapshot.docs.map((doc) => Article.fromFirestore(doc)).toList(),
-        );
+    return _firestore.collection(_collection).snapshots().map((snapshot) {
+      final articles = snapshot.docs
+          .map((doc) => Article.fromFirestore(doc))
+          .toList();
+
+      // Ordenar por data de criação (mais recente primeiro)
+      articles.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+      return articles;
+    });
   }
 
   /// Obter um artigo específico por ID
@@ -138,10 +145,11 @@ class ArticleService {
       return getPublishedArticles();
     }
 
+    // Para busca, vamos buscar todos os artigos publicados e filtrar localmente
+    // Isso evita problemas de índice com consultas complexas
     return _firestore
         .collection(_collection)
         .where('isPublished', isEqualTo: true)
-        .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
           final articles = snapshot.docs
@@ -149,7 +157,7 @@ class ArticleService {
               .toList();
 
           // Filtrar localmente por título ou conteúdo
-          return articles.where((article) {
+          final filteredArticles = articles.where((article) {
             final searchQuery = query.toLowerCase();
             return article.title.toLowerCase().contains(searchQuery) ||
                 article.content.toLowerCase().contains(searchQuery) ||
@@ -157,6 +165,11 @@ class ArticleService {
                   (tag) => tag.toLowerCase().contains(searchQuery),
                 );
           }).toList();
+
+          // Ordenar por data de criação (mais recente primeiro)
+          filteredArticles.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+          return filteredArticles;
         });
   }
 
@@ -166,12 +179,17 @@ class ArticleService {
         .collection(_collection)
         .where('isPublished', isEqualTo: true)
         .where('tags', arrayContains: tag)
-        .orderBy('createdAt', descending: true)
         .snapshots()
-        .map(
-          (snapshot) =>
-              snapshot.docs.map((doc) => Article.fromFirestore(doc)).toList(),
-        );
+        .map((snapshot) {
+          final articles = snapshot.docs
+              .map((doc) => Article.fromFirestore(doc))
+              .toList();
+
+          // Ordenar por data de criação (mais recente primeiro)
+          articles.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+          return articles;
+        });
   }
 
   /// Obter estatísticas dos artigos
