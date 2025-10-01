@@ -7,6 +7,7 @@ import '../widgets/article_list_widget.dart';
 import 'article_create_page.dart';
 import 'admin_announcements_page.dart';
 import 'admin_scout_creation_page.dart';
+import 'admin_teams_page.dart';
 
 class AdminPage extends StatefulWidget {
   const AdminPage({super.key});
@@ -23,7 +24,7 @@ class _AdminPageState extends State<AdminPage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _checkAdminRole();
   }
 
@@ -91,6 +92,7 @@ class _AdminPageState extends State<AdminPage> with TickerProviderStateMixin {
             Tab(icon: Icon(Icons.article), text: 'Artigos'),
             Tab(icon: Icon(Icons.campaign), text: 'Avisos'),
             Tab(icon: Icon(Icons.person_add), text: 'Olheiros'),
+            Tab(icon: Icon(Icons.group), text: 'Times'),
           ],
         ),
       ),
@@ -100,6 +102,7 @@ class _AdminPageState extends State<AdminPage> with TickerProviderStateMixin {
           AdminArticlesTab(),
           AdminAnnouncementsTab(),
           AdminScoutCreationTab(),
+          AdminTeamsPage(),
         ],
       ),
     );

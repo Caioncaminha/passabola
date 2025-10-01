@@ -9,6 +9,9 @@ import 'package:passaabola/pages/login_page.dart';
 import '../data/constants.dart';
 import 'dart:io';
 import '../data/auth_roles.dart';
+import 'teams_page.dart';
+import 'team_invites_page.dart';
+import 'team_create_page.dart';
 
 class PerfilPage extends StatefulWidget {
   const PerfilPage({super.key});
@@ -369,6 +372,17 @@ class _PerfilPageState extends State<PerfilPage> {
                     ),
                   ],
                 ),
+
+                SizedBox(height: KConstants.spacingLarge),
+
+                // Card de times
+                _buildInfoCard(
+                  icon: Icons.group,
+                  title: 'Meus Times',
+                  children: [
+                    _buildInfoRow('Status', 'Gerenciar times e convites'),
+                  ],
+                ),
               ],
             ),
           ),
@@ -383,6 +397,30 @@ class _PerfilPageState extends State<PerfilPage> {
                   title: 'Editar Perfil',
                   subtitle: 'Atualizar suas informações',
                   onTap: () => _showEditProfileDialog(),
+                ),
+                SizedBox(height: KConstants.spacingLarge),
+
+                _buildActionButton(
+                  icon: Icons.group,
+                  title: 'Meus Times',
+                  subtitle: 'Ver e gerenciar seus times',
+                  onTap: () => _navigateToMyTeams(),
+                ),
+                SizedBox(height: KConstants.spacingLarge),
+
+                _buildActionButton(
+                  icon: Icons.mail,
+                  title: 'Convites de Times',
+                  subtitle: 'Ver convites recebidos',
+                  onTap: () => _navigateToTeamInvites(),
+                ),
+                SizedBox(height: KConstants.spacingLarge),
+
+                _buildActionButton(
+                  icon: Icons.add,
+                  title: 'Criar Time',
+                  subtitle: 'Solicitar criação de novo time',
+                  onTap: () => _navigateToCreateTeam(),
                 ),
                 SizedBox(height: KConstants.spacingLarge),
               ],
@@ -1043,6 +1081,24 @@ class _PerfilPageState extends State<PerfilPage> {
         ),
       );
     }
+  }
+
+  void _navigateToMyTeams() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const TeamsPage()));
+  }
+
+  void _navigateToTeamInvites() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const TeamInvitesPage()));
+  }
+
+  void _navigateToCreateTeam() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const TeamCreatePage()));
   }
 
   void _showSettingsDialog() {

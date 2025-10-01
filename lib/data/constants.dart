@@ -33,11 +33,15 @@ class KConstants {
   static const double fontSizeExtraLargeHeading = 32.0;
 
   // Espaçamentos
+  static const double spacingXSmall = 4.0;
   static const double spacingExtraSmall = 4.0;
   static const double spacingSmall = 8.0;
   static const double spacingMedium = 16.0;
   static const double spacingLarge = 24.0;
   static const double spacingExtraLarge = 32.0;
+
+  // Cores de borda
+  static const Color borderColor = Color(0xFFE0E0E0);
 
   // Bordas
   static const double borderRadiusSmall = 4.0;
@@ -201,6 +205,25 @@ class KTextStyle {
   static const TextStyle cardBodyText = TextStyle(
     color: KConstants.textPrimaryColor,
     fontSize: KConstants.fontSizeMedium,
+  );
+
+  // Títulos de seção
+  static const TextStyle heading1 = TextStyle(
+    color: KConstants.textPrimaryColor,
+    fontSize: KConstants.fontSizeExtraLargeHeading,
+    fontWeight: FontWeight.bold,
+  );
+
+  static const TextStyle heading2 = TextStyle(
+    color: KConstants.textPrimaryColor,
+    fontSize: KConstants.fontSizeLargeHeading,
+    fontWeight: FontWeight.bold,
+  );
+
+  static const TextStyle heading3 = TextStyle(
+    color: KConstants.textPrimaryColor,
+    fontSize: KConstants.fontSizeHeading,
+    fontWeight: FontWeight.bold,
   );
 }
 

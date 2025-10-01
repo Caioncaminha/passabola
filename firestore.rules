@@ -1,60 +1,186 @@
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
+  rules_version = '2';
+  service cloud.firestore {
+    match /databases/{database}/documents {
 
-    // ---- Coleção de Usuários ----
-    match /usuarios/{userId} {
-      allow read, update: if request.auth != null && request.auth.uid == userId;
-      allow create: if request.auth != null && request.auth.uid == userId;
-      allow delete: if false; // ninguém pode deletar usuários
+      // ---- Coleção de Usuários ----
+      match /usuarios/{userId} {
+        allow read, update: if request.auth != null && request.auth.uid == userId;
+        allow create: if request.auth != null && request.auth.uid == userId;
+        allow delete: if false; // ninguém pode deletar usuários
 
-      // Validação dos campos básicos
-      allow update: if request.resource.data.keys().hasAll(["createdAt", "email", "isRegistered", "name", "userId"]) &&
-                    request.resource.data.createdAt is timestamp &&
-                    request.resource.data.email is string &&
-                    request.resource.data.isRegistered is bool &&
-                    request.resource.data.name is string &&
-                    request.resource.data.userId == userId &&
-                    request.auth.uid == userId;
-    }
+        // Validação dos campos básicos
+        allow update: if request.resource.data.keys().hasAll(["createdAt", "email", "isRegistered", "name", "userId"]) &&
+                      request.resource.data.createdAt is timestamp &&
+                      request.resource.data.email is string &&
+                      request.resource.data.isRegistered is bool &&
+                      request.resource.data.name is string &&
+                      request.resource.data.userId == userId &&
+                      request.auth.uid == userId;
+      }
 
-    // ---- Coleção de Jogadoras ----
-    match /jogadoras/{userId} {
-      allow read, update: if request.auth != null && request.auth.uid == userId;
-      allow create: if request.auth != null && request.auth.uid == userId;
-      allow delete: if false; // não permitir exclusão direta
+      // ---- Coleção de Jogadoras ----
+      match /jogadoras/{userId} {
+        allow read, update: if request.auth != null && request.auth.uid == userId;
+        allow create: if request.auth != null && request.auth.uid == userId;
+        allow delete: if false; // não permitir exclusão direta
 
-      // Validação dos campos obrigatórios
-      allow update: if request.resource.data.keys().hasAll(
-                      ["address", "birthDate", "cpf", "isRegistered", "name", "phone", "position", "registrationDate", "registrationMethod"]
-                    ) &&
-                    request.resource.data.address is string &&
-                    request.resource.data.birthDate is timestamp &&
-                    request.resource.data.cpf is string &&
-                    request.resource.data.isRegistered is bool &&
-                    request.resource.data.name is string &&
-                    request.resource.data.phone is string &&
-                    request.resource.data.position is string &&
-                    request.resource.data.registrationDate is timestamp &&
-                    request.resource.data.registrationMethod is string &&
-                    request.auth.uid == userId;
-    }
+        // Validação dos campos obrigatórios
+        allow update: if request.resource.data.keys().hasAll(
+                        ["address", "birthDate", "cpf", "isRegistered", "name", "phone", "position", "registrationDate", "registrationMethod"]
+                      ) &&
+                      request.resource.data.address is string &&
+                      request.resource.data.birthDate is timestamp &&
+                      request.resource.data.cpf is string &&
+                      request.resource.data.isRegistered is bool &&
+                      request.resource.data.name is string &&
+                      request.resource.data.phone is string &&
+                      request.resource.data.position is string &&
+                      request.resource.data.registrationDate is timestamp &&
+                      request.resource.data.registrationMethod is string &&
+                      request.auth.uid == userId;
+      }
 
-    // ---- Coleção de Artigos ----
-    match /articles/{articleId} {
-      // Qualquer usuário autenticado pode ler, criar, atualizar e deletar artigos
-      allow read, write: if request.auth != null;
-    }
+      // ---- Coleção de Artigos ----
+      match /articles/{articleId} {
+        // Qualquer usuário autenticado pode ler, criar, atualizar e deletar artigos
+        allow read, write: if request.auth != null;
+      }
 
-    // ---- Coleção de Avisos (para futuras implementações) ----
-    match /announcements/{announcementId} {
-      // Qualquer usuário autenticado pode ler avisos
-      allow read: if request.auth != null;
-      
-      // Apenas admins podem criar, atualizar ou deletar avisos
-      allow create, update, delete: if request.auth != null && 
-                                      exists(/databases/$(database)/documents/usuarios/$(request.auth.uid)) &&
-                                      get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'admin';
+      // ---- Coleção de Avisos (para futuras implementações) ----
+      match /announcements/{announcementId} {
+        // Qualquer usuário autenticado pode ler avisos
+        allow read: if request.auth != null;
+        
+        // Apenas admins podem criar, atualizar ou deletar avisos
+        allow create, update, delete: if request.auth != null && 
+                                        exists(/databases/$(database)/documents/usuarios/$(request.auth.uid)) &&
+                                        get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'admin';
+      }
+
+      // ---- Coleção de Times ----
+      match /teams/{teamId} {
+        // Qualquer usuário autenticado pode ler times ativos
+        allow read: if request.auth != null && 
+                      (resource.data.status == 'active' || 
+                      request.auth.uid == resource.data.captainId ||
+                      isAdmin() ||
+                      isTeamMember(teamId));
+        
+        // Apenas usuários autenticados podem criar times (solicitações)
+        allow create: if request.auth != null && 
+                        request.resource.data.captainId == request.auth.uid &&
+                        request.resource.data.status == 'pending' &&
+                        validateTeamData();
+        
+        // Capitão e admin podem atualizar o time
+        // Usuários podem atualizar apenas quando aceitam convites (adicionar membros)
+        allow update: if request.auth != null && 
+                        (request.auth.uid == resource.data.captainId || 
+                         isAdmin() ||
+                         isAddingMember());
+        
+        // Apenas o capitão pode deletar o time
+        allow delete: if request.auth != null && request.auth.uid == resource.data.captainId;
+      }
+
+      // ---- Coleção de Convites de Times ----
+      match /team_invites/{inviteId} {
+        // Qualquer usuário autenticado pode ler convites
+        // (filtrado no código por email do usuário)
+        allow read: if request.auth != null;
+        
+        // Capitães podem criar convites para seus times
+        allow create: if request.auth != null && 
+                        isTeamCaptain(request.resource.data.teamId) &&
+                        validateInviteData();
+        
+        // Qualquer usuário autenticado pode aceitar/rejeitar convites
+        // A validação de email é feita no código da aplicação
+        allow update: if request.auth != null && onlyUpdatingInviteStatus();
+        
+        // Capitães podem deletar convites que enviaram
+        // Admins e olheiros podem deletar qualquer convite
+        allow delete: if request.auth != null && 
+                        (request.auth.uid == resource.data.invitedByUserId ||
+                         isAdminOrScout());
+      }
+
+      // ---- Funções auxiliares ----
+      function isAdmin() {
+        return exists(/databases/$(database)/documents/usuarios/$(request.auth.uid)) &&
+              get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'admin';
+      }
+
+      function isScout() {
+        return exists(/databases/$(database)/documents/usuarios/$(request.auth.uid)) &&
+              get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data.role == 'olheiro';
+      }
+
+      function isAdminOrScout() {
+        return isAdmin() || isScout();
+      }
+
+      function isAddingMember() {
+        // Verifica se a atualização é apenas para adicionar um membro ao array
+        return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['members', 'updatedAt']) &&
+               request.resource.data.members.size() > resource.data.members.size();
+      }
+
+      function isTeamMember(teamId) {
+        return exists(/databases/$(database)/documents/teams/$(teamId)) &&
+              get(/databases/$(database)/documents/teams/$(teamId)).data.members[request.auth.uid] != null;
+      }
+
+      function isTeamCaptain(teamId) {
+        return exists(/databases/$(database)/documents/teams/$(teamId)) &&
+              get(/databases/$(database)/documents/teams/$(teamId)).data.captainId == request.auth.uid;
+      }
+
+      function validateTeamData() {
+        return request.resource.data.keys().hasAll([
+          'name', 'description', 'captainId', 'captainName', 'createdAt', 'updatedAt', 
+          'status', 'level', 'members', 'maxMembers', 'gamesPlayed', 'gamesWon', 
+          'gamesLost', 'gamesDrawn', 'totalGoals', 'totalGoalsConceded'
+        ]) &&
+        request.resource.data.name is string &&
+        request.resource.data.description is string &&
+        request.resource.data.captainId is string &&
+        request.resource.data.captainName is string &&
+        request.resource.data.createdAt is timestamp &&
+        request.resource.data.updatedAt is timestamp &&
+        request.resource.data.status in ['pending', 'active', 'inactive', 'rejected'] &&
+        request.resource.data.level in ['beginner', 'amateur', 'semiPro', 'professional'] &&
+        request.resource.data.members is list &&
+        request.resource.data.maxMembers is int &&
+        request.resource.data.gamesPlayed is int &&
+        request.resource.data.gamesWon is int &&
+        request.resource.data.gamesLost is int &&
+        request.resource.data.gamesDrawn is int &&
+        request.resource.data.totalGoals is int &&
+        request.resource.data.totalGoalsConceded is int;
+      }
+
+      function validateInviteData() {
+        return request.resource.data.keys().hasAll([
+          'teamId', 'invitedUserEmail', 'invitedByUserId', 
+          'createdAt', 'isAccepted', 'isRejected'
+        ]) &&
+        request.resource.data.teamId is string &&
+        request.resource.data.invitedUserEmail is string &&
+        request.resource.data.invitedByUserId is string &&
+        request.resource.data.createdAt is timestamp &&
+        request.resource.data.isAccepted is bool &&
+        request.resource.data.isRejected is bool &&
+        request.resource.data.invitedByUserId == request.auth.uid;
+      }
+
+      function onlyUpdatingInviteStatus() {
+        // Permite atualizar status de convite e adicionar ID do usuário quando aceito
+        return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isAccepted', 'isRejected', 'invitedUserId', 'updatedAt']) &&
+              // Não pode aceitar e rejeitar ao mesmo tempo
+              (request.resource.data.isAccepted != request.resource.data.isRejected) &&
+              // Se aceito, deve ter invitedUserId
+              (request.resource.data.isAccepted == false || request.resource.data.invitedUserId is string);
+      }
     }
   }
-}
