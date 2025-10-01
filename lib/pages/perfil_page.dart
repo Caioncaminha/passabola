@@ -7,11 +7,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:passaabola/pages/login_page.dart';
 import '../data/constants.dart';
+import '../data/team_service.dart';
+import '../data/team_model.dart';
 import 'dart:io';
 import '../data/auth_roles.dart';
 import 'teams_page.dart';
 import 'team_invites_page.dart';
 import 'team_create_page.dart';
+import 'team_details_page.dart';
 
 class PerfilPage extends StatefulWidget {
   const PerfilPage({super.key});
@@ -28,6 +31,8 @@ class _PerfilPageState extends State<PerfilPage> {
   bool _isLoading = false;
   bool _isRegistered = false;
   bool _isCheckingRegistration = true;
+  bool _isUserInTeam = false;
+  Team? _userTeam;
   Map<String, dynamic>? _userData; // Dados completos do usuário
   String? _profileImageUrl; // URL da foto de perfil
   bool _notificationsEnabled = true; // Configuração de notificações
@@ -71,6 +76,9 @@ class _PerfilPageState extends State<PerfilPage> {
             _isCheckingRegistration = false;
           });
         }
+
+        // Verificar se o usuário está em um time
+        await _checkUserTeamStatus();
       } else {
         // Usuário não está logado, redirecionar para login
         setState(() {
@@ -90,6 +98,26 @@ class _PerfilPageState extends State<PerfilPage> {
         _userData = null;
         _isCheckingRegistration = false;
         _userRole = null;
+      });
+    }
+  }
+
+  Future<void> _checkUserTeamStatus() async {
+    if (_userId == null) return;
+
+    try {
+      final isInTeam = await TeamUtils.isUserInTeam();
+      final userTeam = await TeamUtils.getUserTeam();
+
+      setState(() {
+        _isUserInTeam = isInTeam;
+        _userTeam = userTeam;
+      });
+    } catch (e) {
+      print('Error checking user team status: $e');
+      setState(() {
+        _isUserInTeam = false;
+        _userTeam = null;
       });
     }
   }
@@ -387,6 +415,114 @@ class _PerfilPageState extends State<PerfilPage> {
             ),
           ),
 
+          // --- MEU TIME ---
+          if (_isUserInTeam && _userTeam != null) ...[
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: KConstants.spacingLarge),
+              padding: EdgeInsets.all(KConstants.spacingMedium),
+              decoration: BoxDecoration(
+                color: KConstants.primaryColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(
+                  KConstants.borderRadiusMedium,
+                ),
+                border: Border.all(
+                  color: KConstants.primaryColor.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.group,
+                        color: KConstants.primaryColor,
+                        size: 24,
+                      ),
+                      SizedBox(width: KConstants.spacingSmall),
+                      Text(
+                        'Meu Time',
+                        style: KTextStyle.heading3.copyWith(
+                          color: KConstants.primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: KConstants.spacingMedium),
+                  Row(
+                    children: [
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: KConstants.primaryColor.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(
+                            KConstants.borderRadiusSmall,
+                          ),
+                        ),
+                        child: _userTeam!.imageUrl != null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(
+                                  KConstants.borderRadiusSmall,
+                                ),
+                                child: Image.network(
+                                  _userTeam!.imageUrl!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Icon(
+                                      Icons.group,
+                                      color: KConstants.primaryColor,
+                                    );
+                                  },
+                                ),
+                              )
+                            : Icon(Icons.group, color: KConstants.primaryColor),
+                      ),
+                      SizedBox(width: KConstants.spacingMedium),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _userTeam!.name,
+                              style: KTextStyle.titleText.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: KConstants.spacingSmall),
+                            Text(
+                              'Capitão: ${_userTeam!.captainName}',
+                              style: KTextStyle.bodyText.copyWith(
+                                color: KConstants.textSecondaryColor,
+                              ),
+                            ),
+                            SizedBox(height: KConstants.spacingXSmall),
+                            Text(
+                              '${_userTeam!.currentMembersCount}/${_userTeam!.maxMembers} membros',
+                              style: KTextStyle.smallText.copyWith(
+                                color: KConstants.textSecondaryColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => _navigateToTeamDetails(_userTeam!),
+                        icon: Icon(
+                          Icons.arrow_forward_ios,
+                          color: KConstants.primaryColor,
+                          size: 20,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: KConstants.spacingLarge),
+          ],
+
           // --- MENU DE AÇÕES ---
           Padding(
             padding: EdgeInsets.symmetric(horizontal: KConstants.spacingLarge),
@@ -403,7 +539,7 @@ class _PerfilPageState extends State<PerfilPage> {
                 _buildActionButton(
                   icon: Icons.group,
                   title: 'Meus Times',
-                  subtitle: 'Ver e gerenciar seus times',
+                  subtitle: 'Ver times criados',
                   onTap: () => _navigateToMyTeams(),
                 ),
                 SizedBox(height: KConstants.spacingLarge),
@@ -416,13 +552,33 @@ class _PerfilPageState extends State<PerfilPage> {
                 ),
                 SizedBox(height: KConstants.spacingLarge),
 
-                _buildActionButton(
-                  icon: Icons.add,
-                  title: 'Criar Time',
-                  subtitle: 'Solicitar criação de novo time',
-                  onTap: () => _navigateToCreateTeam(),
+                StreamBuilder<List<Team>>(
+                  stream: TeamService.getUserTeams(
+                    FirebaseAuth.instance.currentUser?.uid ?? '',
+                  ),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const SizedBox.shrink();
+                    }
+
+                    final userTeams = snapshot.data ?? [];
+                    final canCreate = userTeams.isEmpty;
+
+                    if (!canCreate) return const SizedBox.shrink();
+
+                    return Column(
+                      children: [
+                        _buildActionButton(
+                          icon: Icons.add,
+                          title: 'Criar Time',
+                          subtitle: 'Solicitar criação de novo time',
+                          onTap: () => _navigateToCreateTeam(),
+                        ),
+                        SizedBox(height: KConstants.spacingLarge),
+                      ],
+                    );
+                  },
                 ),
-                SizedBox(height: KConstants.spacingLarge),
               ],
             ),
           ),
@@ -1087,6 +1243,12 @@ class _PerfilPageState extends State<PerfilPage> {
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (context) => const TeamsPage()));
+  }
+
+  void _navigateToTeamDetails(Team team) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => TeamDetailsPage(team: team)),
+    );
   }
 
   void _navigateToTeamInvites() {

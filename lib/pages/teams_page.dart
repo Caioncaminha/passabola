@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../data/constants.dart';
 import '../data/team_service.dart';
 import '../data/team_model.dart';
@@ -15,11 +16,42 @@ class TeamsPage extends StatefulWidget {
 class _TeamsPageState extends State<TeamsPage> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  String? _userTeamId;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkUserTeamStatus();
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _checkUserTeamStatus() async {
+    try {
+      final teamId = await TeamUtils.getUserTeamId();
+
+      setState(() {
+        _userTeamId = teamId;
+      });
+    } catch (e) {
+      print('Error checking user team status: $e');
+      setState(() {
+        _userTeamId = null;
+      });
+    }
+  }
+
+  List<Team> _sortTeamsWithUserTeamFirst(List<Team> teams) {
+    if (_userTeamId == null) return teams;
+
+    final userTeam = teams.where((team) => team.id == _userTeamId).toList();
+    final otherTeams = teams.where((team) => team.id != _userTeamId).toList();
+
+    return [...userTeam, ...otherTeams];
   }
 
   @override
@@ -30,10 +62,26 @@ class _TeamsPageState extends State<TeamsPage> {
         backgroundColor: KConstants.primaryColor,
         foregroundColor: KConstants.textLightColor,
         actions: [
-          IconButton(
-            onPressed: () => _showCreateTeamDialog(),
-            icon: const Icon(Icons.add),
-            tooltip: 'Criar Time',
+          StreamBuilder<List<Team>>(
+            stream: TeamService.getUserTeams(
+              FirebaseAuth.instance.currentUser?.uid ?? '',
+            ),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const SizedBox.shrink();
+              }
+
+              final userTeams = snapshot.data ?? [];
+              final canCreate = userTeams.isEmpty;
+
+              if (!canCreate) return const SizedBox.shrink();
+
+              return IconButton(
+                onPressed: () => _showCreateTeamDialog(),
+                icon: const Icon(Icons.add),
+                tooltip: 'Criar Time',
+              );
+            },
           ),
         ],
       ),
@@ -152,7 +200,10 @@ class _TeamsPageState extends State<TeamsPage> {
 
         final teams = snapshot.data ?? [];
 
-        if (teams.isEmpty) {
+        // Ordenar times: time atual primeiro, depois os outros
+        final sortedTeams = _sortTeamsWithUserTeamFirst(teams);
+
+        if (sortedTeams.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -172,14 +223,30 @@ class _TeamsPageState extends State<TeamsPage> {
                   ),
                 ),
                 const SizedBox(height: KConstants.spacingLarge),
-                ElevatedButton.icon(
-                  onPressed: () => _showCreateTeamDialog(),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Criar Time'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: KConstants.primaryColor,
-                    foregroundColor: KConstants.textLightColor,
+                StreamBuilder<List<Team>>(
+                  stream: TeamService.getUserTeams(
+                    FirebaseAuth.instance.currentUser?.uid ?? '',
                   ),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const SizedBox.shrink();
+                    }
+
+                    final userTeams = snapshot.data ?? [];
+                    final canCreate = userTeams.isEmpty;
+
+                    if (!canCreate) return const SizedBox.shrink();
+
+                    return ElevatedButton.icon(
+                      onPressed: () => _showCreateTeamDialog(),
+                      icon: const Icon(Icons.add),
+                      label: const Text('Criar Time'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: KConstants.primaryColor,
+                        foregroundColor: KConstants.textLightColor,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -188,10 +255,11 @@ class _TeamsPageState extends State<TeamsPage> {
 
         return ListView.builder(
           padding: const EdgeInsets.all(KConstants.spacingMedium),
-          itemCount: teams.length,
+          itemCount: sortedTeams.length,
           itemBuilder: (context, index) {
-            final team = teams[index];
-            return _buildTeamCard(team);
+            final team = sortedTeams[index];
+            final isUserTeam = _userTeamId != null && team.id == _userTeamId;
+            return _buildTeamCard(team, isUserTeam: isUserTeam);
           },
         );
       },
@@ -262,16 +330,21 @@ class _TeamsPageState extends State<TeamsPage> {
           itemCount: teams.length,
           itemBuilder: (context, index) {
             final team = teams[index];
-            return _buildTeamCard(team);
+            final isUserTeam = _userTeamId != null && team.id == _userTeamId;
+            return _buildTeamCard(team, isUserTeam: isUserTeam);
           },
         );
       },
     );
   }
 
-  Widget _buildTeamCard(Team team) {
+  Widget _buildTeamCard(Team team, {bool isUserTeam = false}) {
     return Card(
       margin: const EdgeInsets.only(bottom: KConstants.spacingMedium),
+      elevation: isUserTeam ? 4 : 2,
+      color: isUserTeam
+          ? KConstants.primaryColor.withValues(alpha: 0.05)
+          : null,
       child: InkWell(
         onTap: () => _navigateToTeamDetails(team),
         borderRadius: BorderRadius.circular(KConstants.borderRadiusMedium),
@@ -318,11 +391,36 @@ class _TeamsPageState extends State<TeamsPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          team.name,
-                          style: KTextStyle.heading3.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                team.name,
+                                style: KTextStyle.heading3.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            if (isUserTeam) ...[
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: KConstants.spacingSmall,
+                                  vertical: KConstants.spacingXSmall,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: KConstants.primaryColor,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  'Meu Time',
+                                  style: KTextStyle.smallText.copyWith(
+                                    color: KConstants.textLightColor,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                         const SizedBox(height: KConstants.spacingSmall),
                         Row(

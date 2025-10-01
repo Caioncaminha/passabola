@@ -130,20 +130,28 @@ class TeamService {
 
   /// Obter times de um usuário
   static Stream<List<Team>> getUserTeams(String userId) {
-    return _firestore
-        .collection(_collection)
-        .where('members', arrayContains: {'userId': userId, 'isActive': true})
-        .snapshots()
-        .map((snapshot) {
-          final teams = snapshot.docs
-              .map((doc) => Team.fromFirestore(doc))
-              .toList();
+    return _firestore.collection(_collection).snapshots().map((snapshot) {
+      final teams = snapshot.docs
+          .map((doc) {
+            try {
+              return Team.fromFirestore(doc);
+            } catch (e) {
+              print('TeamService - Erro ao converter time ${doc.id}: $e');
+              return null;
+            }
+          })
+          .where((team) => team != null)
+          .cast<Team>()
+          .where(
+            (team) => team.isMember(userId) && team.status == TeamStatus.active,
+          )
+          .toList();
 
-          // Ordenar por data de criação (mais recente primeiro)
-          teams.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      // Ordenar por data de criação (mais recente primeiro)
+      teams.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-          return teams;
-        });
+      return teams;
+    });
   }
 
   /// Aprovar um time

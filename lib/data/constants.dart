@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'team_service.dart';
+import 'team_model.dart';
 
 class KConstants {
   static const String themeModeKey = 'themeModeKey';
@@ -316,5 +319,60 @@ class KInputDecoration {
         vertical: KConstants.spacingMedium,
       ),
     );
+  }
+}
+
+/// Classe utilitária para funções relacionadas a times
+class TeamUtils {
+  /// Verifica se o usuário atual está em algum time
+  /// Retorna true se o usuário estiver em um time, false caso contrário
+  static Future<bool> isUserInTeam() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return false;
+
+      final userTeams = await TeamService.getUserTeams(user.uid).first;
+      return userTeams.isNotEmpty;
+    } catch (e) {
+      print('Erro ao verificar se usuário está em time: $e');
+      return false;
+    }
+  }
+
+  /// Verifica se o usuário atual está em algum time e retorna o ID do time
+  /// Retorna o ID do primeiro time encontrado ou null se não estiver em nenhum time
+  static Future<String?> getUserTeamId() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return null;
+
+      final userTeams = await TeamService.getUserTeams(user.uid).first;
+      return userTeams.isNotEmpty ? userTeams.first.id : null;
+    } catch (e) {
+      print('Erro ao obter ID do time do usuário: $e');
+      return null;
+    }
+  }
+
+  /// Verifica se o usuário atual está em algum time e retorna o objeto Team
+  /// Retorna o primeiro time encontrado ou null se não estiver em nenhum time
+  static Future<Team?> getUserTeam() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return null;
+
+      final userTeams = await TeamService.getUserTeams(user.uid).first;
+      return userTeams.isNotEmpty ? userTeams.first : null;
+    } catch (e) {
+      print('Erro ao obter time do usuário: $e');
+      return null;
+    }
+  }
+
+  /// Verifica se o usuário pode criar um novo time
+  /// Retorna true se o usuário não estiver em nenhum time, false caso contrário
+  static Future<bool> canUserCreateTeam() async {
+    final isInTeam = await isUserInTeam();
+    return !isInTeam;
   }
 }
