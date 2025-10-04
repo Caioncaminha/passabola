@@ -30,7 +30,7 @@ class _HomePageState extends State<HomePage> {
       body:
           'Use o botão "Nova reportagem" para adicionar uma matéria com imagem, título, subtítulo e texto.',
       imageUrl:
-          'https://images.unsplash.com/photo-1521417531039-55b8c7a7f2a9?q=80&w=1200&auto=format&fit=crop',
+          'https://media.licdn.com/dms/image/sync/v2/D4D27AQHnHfTSNikx9Q/articleshare-shrink_800/articleshare-shrink_800/0/1747156117066?e=2147483647&v=beta&t=qjv4AWT2CQ6n4rzE_Fhwm3CT6kcckJvupGGl5FXotTA',
       createdAt: DateTime.now(),
     ),
   ];
@@ -60,7 +60,7 @@ class _HomePageState extends State<HomePage> {
       'data': '22 de Março',
       'local': 'Centro Esportivo',
       'imagem':
-          'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=1200&auto=format&fit=crop',
+          'https://i.ytimg.com/vi/B8iMVIwiVe8/maxresdefault.jpg',
     },
   ];
   
