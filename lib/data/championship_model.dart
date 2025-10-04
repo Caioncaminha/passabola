@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'location_model.dart';
 
 enum ChampionshipStatus {
   draft, // Rascunho
@@ -181,7 +182,8 @@ class Championship {
   final ChampionshipStatus status;
   final ChampionshipType type;
   final RegistrationType registrationType;
-  final String location;
+  final String location; // Mantido para compatibilidade
+  final LocationData? locationData; // Nova localização com coordenadas
   final int maxTeams;
   final int minPlayersPerTeam;
   final int maxPlayersPerTeam;
@@ -207,6 +209,7 @@ class Championship {
     this.type = ChampionshipType.knockout,
     this.registrationType = RegistrationType.teamOnly,
     required this.location,
+    this.locationData,
     this.maxTeams = 16,
     this.minPlayersPerTeam = 7,
     this.maxPlayersPerTeam = 11,
@@ -252,6 +255,9 @@ class Championship {
         orElse: () => RegistrationType.teamOnly,
       ),
       location: data['location'] ?? '',
+      locationData: data['locationData'] != null
+          ? LocationData.fromMap(data['locationData'] as Map<String, dynamic>)
+          : null,
       maxTeams: data['maxTeams'] ?? 16,
       minPlayersPerTeam: data['minPlayersPerTeam'] ?? 7,
       maxPlayersPerTeam: data['maxPlayersPerTeam'] ?? 11,
@@ -290,6 +296,7 @@ class Championship {
       'type': type.name,
       'registrationType': registrationType.name,
       'location': location,
+      'locationData': locationData?.toMap(),
       'maxTeams': maxTeams,
       'minPlayersPerTeam': minPlayersPerTeam,
       'maxPlayersPerTeam': maxPlayersPerTeam,
@@ -317,6 +324,7 @@ class Championship {
     ChampionshipType? type,
     RegistrationType? registrationType,
     String? location,
+    LocationData? locationData,
     int? maxTeams,
     int? minPlayersPerTeam,
     int? maxPlayersPerTeam,
@@ -343,6 +351,7 @@ class Championship {
       type: type ?? this.type,
       registrationType: registrationType ?? this.registrationType,
       location: location ?? this.location,
+      locationData: locationData ?? this.locationData,
       maxTeams: maxTeams ?? this.maxTeams,
       minPlayersPerTeam: minPlayersPerTeam ?? this.minPlayersPerTeam,
       maxPlayersPerTeam: maxPlayersPerTeam ?? this.maxPlayersPerTeam,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../data/constants.dart';
+import '../data/announcement_service.dart';
 
 class AdminAnnouncementsPage extends StatefulWidget {
   const AdminAnnouncementsPage({super.key});
@@ -30,13 +30,11 @@ class _AdminAnnouncementsPageState extends State<AdminAnnouncementsPage> {
     });
 
     try {
-      await FirebaseFirestore.instance.collection('avisos').add({
-        'title': _titleController.text.trim(),
-        'message': _messageController.text.trim(),
-        'createdAt': FieldValue.serverTimestamp(),
-        'isActive': true,
-        'createdBy': 'admin', // Pode ser expandido para incluir UID do admin
-      });
+      await AnnouncementService.createAnnouncement(
+        title: _titleController.text.trim(),
+        message: _messageController.text.trim(),
+        isActive: true,
+      );
 
       if (!mounted) return;
 
