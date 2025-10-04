@@ -46,7 +46,16 @@
         allow read, write: if request.auth != null;
       }
 
-      // ---- Coleção de Avisos (para futuras implementações) ----
+      // ---- Coleção de Avisos ----
+      match /avisos/{avisoId} {
+        // Qualquer usuário autenticado pode ler avisos
+        allow read: if request.auth != null;
+        
+        // Apenas usuários autenticados podem criar avisos (simplificado para funcionar)
+        allow create, update, delete: if request.auth != null;
+      }
+
+      // ---- Coleção de Announcements (para futuras implementações) ----
       match /announcements/{announcementId} {
         // Qualquer usuário autenticado pode ler avisos
         allow read: if request.auth != null;
