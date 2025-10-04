@@ -44,6 +44,7 @@ class KConstants {
   static const double borderRadiusMedium = 8.0;
   static const double borderRadiusLarge = 12.0;
   static const double borderRadiusExtraLarge = 16.0;
+  static const double borderRadiusPill = 30.0; 
 }
 
 class KTextStyle {
