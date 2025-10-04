@@ -16,7 +16,7 @@ void main() async {
     // Mantemos o app rodando para evitar tela branca na apresentação.
     print('Firebase.initializeApp() com opções falhou: $e');
     try {
-      await Firebase.initializeApp();
+      await Firebase.initializeApp();eee
     } catch (e2) {
       print('Firebase.initializeApp() fallback falhou: $e2');
     }

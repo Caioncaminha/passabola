@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import '../data/constants.dart';
 import '../data/article.dart';
+import '../data/championship_model.dart';
+import '../data/championship_service.dart';
 import '../widgets/article_template.dart';
 import 'article_create_page.dart';
+import 'championships_page.dart';
+import 'championship_registration_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,6 +17,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final TextEditingController _searchController = TextEditingController();
+  Championship? _featuredChampionship;
+  bool _isLoadingChampionship = true;
 
   // Dados de exemplo para as seções
   final List<Article> _articles = [
@@ -73,62 +79,35 @@ class _HomePageState extends State<HomePage> {
     },
   ];
 
-  final List<Map<String, dynamic>> _campeonatos = [
-    {
-      'titulo': 'Copa Feminina 2024',
-      'dataInicio': '15 de Abril',
-      'dataFim': '30 de Maio',
-      'local': 'Estádio Municipal',
-      'categoria': 'Sub-18',
-      'preco': 'R\$ 50,00',
-      'vagas': 16,
-      'inscritos': 8,
-      'imagem':
-          'https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?q=80&w=1200&auto=format&fit=crop',
-      'descricao':
-          'Campeonato estadual para atletas sub-18 com premiação em dinheiro.',
-    },
-    {
-      'titulo': 'Liga Amadora Feminina',
-      'dataInicio': '1 de Junho',
-      'dataFim': '15 de Agosto',
-      'local': 'Centro Esportivo',
-      'categoria': 'Adulto',
-      'preco': 'R\$ 80,00',
-      'vagas': 12,
-      'inscritos': 5,
-      'imagem':
-          'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=1200&auto=format&fit=crop',
-      'descricao':
-          'Liga para jogadoras amadoras com sistema de pontos corridos.',
-    },
-    {
-      'titulo': 'Copa das Estrelas',
-      'dataInicio': '10 de Setembro',
-      'dataFim': '25 de Outubro',
-      'local': 'Arena Esportiva',
-      'categoria': 'Sub-16',
-      'preco': 'R\$ 40,00',
-      'vagas': 20,
-      'inscritos': 12,
-      'imagem':
-          'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=1200&auto=format&fit=crop',
-      'descricao': 'Torneio para jovens promessas com acompanhamento técnico.',
-    },
-    {
-      'titulo': 'Champions League Feminina',
-      'dataInicio': '5 de Novembro',
-      'dataFim': '20 de Dezembro',
-      'local': 'Complexo Esportivo',
-      'categoria': 'Adulto',
-      'preco': 'R\$ 120,00',
-      'vagas': 8,
-      'inscritos': 3,
-      'imagem':
-          'https://images.unsplash.com/photo-1521417531039-55b8c7a7f2a9?q=80&w=1200&auto=format&fit=crop',
-      'descricao': 'Campeonato de elite com premiação especial e troféus.',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadFeaturedChampionship();
+  }
+
+  Future<void> _loadFeaturedChampionship() async {
+    try {
+      final championships = await ChampionshipService.getPublicChampionships(
+        limit: 1,
+      );
+      if (mounted) {
+        setState(() {
+          _featuredChampionship = championships.isNotEmpty
+              ? championships.first
+              : null;
+          _isLoadingChampionship = false;
+        });
+      }
+    } catch (e) {
+      print('Erro ao carregar campeonato em destaque: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingChampionship = false;
+          _featuredChampionship = null;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -211,15 +190,13 @@ class _HomePageState extends State<HomePage> {
             ..._videos.map((video) => _buildVideoCard(video)).toList(),
             const SizedBox(height: KConstants.spacingExtraLarge),
 
-            // Seção Futuros Campeonatos
+            // Seção Campeonato em Destaque
             _buildSectionHeader(
-              'Futuros Campeonatos',
+              'Campeonato em Destaque',
               Icons.emoji_events_outlined,
             ),
             const SizedBox(height: KConstants.spacingMedium),
-            ..._campeonatos
-                .map((campeonato) => _buildChampionshipCard(campeonato))
-                .toList(),
+            _buildFeaturedChampionshipSection(),
             const SizedBox(height: KConstants.spacingLarge),
           ],
         ),
@@ -382,153 +359,306 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildChampionshipCard(Map<String, dynamic> campeonato) {
-    final int vagasRestantes = campeonato['vagas'] - campeonato['inscritos'];
-    final bool temVagas = vagasRestantes > 0;
+  Widget _buildFeaturedChampionshipSection() {
+    if (_isLoadingChampionship) {
+      return Container(
+        height: 200,
+        decoration: KDecoration.cardDecoration,
+        child: const Center(child: CircularProgressIndicator()),
+      );
+    }
 
+    if (_featuredChampionship == null) {
+      return Container(
+        padding: const EdgeInsets.all(KConstants.spacingLarge),
+        decoration: KDecoration.cardDecoration,
+        child: Column(
+          children: [
+            Icon(
+              Icons.emoji_events_outlined,
+              size: 64,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: KConstants.spacingMedium),
+            Text(
+              'Nenhum campeonato disponível no momento',
+              style: KTextStyle.titleText.copyWith(color: Colors.grey[600]),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: KConstants.spacingSmall),
+            Text(
+              'Novos campeonatos aparecerão aqui quando forem publicados',
+              style: KTextStyle.bodyText.copyWith(color: Colors.grey[500]),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: KConstants.spacingLarge),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const ChampionshipsPage(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.emoji_events),
+                label: const Text('Ver Todos os Campeonatos'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: KConstants.primaryColor,
+                  foregroundColor: KConstants.textLightColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        _buildRealChampionshipCard(_featuredChampionship!),
+        const SizedBox(height: KConstants.spacingMedium),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ChampionshipsPage()),
+              );
+            },
+            icon: const Icon(Icons.list),
+            label: const Text('Ver Todos os Campeonatos'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: KConstants.primaryColor,
+              side: BorderSide(color: KConstants.primaryColor),
+              padding: const EdgeInsets.symmetric(
+                vertical: KConstants.spacingMedium,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRealChampionshipCard(Championship championship) {
     return Container(
-      margin: const EdgeInsets.only(bottom: KConstants.spacingMedium),
       decoration: KDecoration.cardDecoration,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(12),
-                ),
-                child: Image.network(
-                  campeonato['imagem'],
-                  height: 160,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              Positioned(
-                top: KConstants.spacingSmall,
-                right: KConstants.spacingSmall,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: KConstants.spacingSmall,
-                    vertical: KConstants.spacingExtraSmall,
+          // Imagem de cabeçalho
+          if (championship.imageUrl != null)
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(12),
                   ),
-                  decoration: BoxDecoration(
-                    color: campeonato['categoria'] == 'Adulto'
-                        ? Colors.orange
-                        : Colors.blue,
-                    borderRadius: BorderRadius.circular(
-                      KConstants.borderRadiusSmall,
-                    ),
-                  ),
-                  child: Text(
-                    campeonato['categoria'],
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: Image.network(
+                    championship.imageUrl!,
+                    height: 180,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 180,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(12),
+                          ),
+                        ),
+                        child: const Center(
+                          child: Icon(Icons.emoji_events, size: 50),
+                        ),
+                      );
+                    },
                   ),
                 ),
-              ),
-            ],
-          ),
+                Positioned(
+                  top: KConstants.spacingSmall,
+                  right: KConstants.spacingSmall,
+                  child: _buildStatusChip(championship.status),
+                ),
+              ],
+            ),
+
+          // Conteúdo do card
           Padding(
             padding: const EdgeInsets.all(KConstants.spacingMedium),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(campeonato['titulo'], style: KTextStyle.cardTitleText),
+                Text(championship.title, style: KTextStyle.cardTitleText),
                 const SizedBox(height: KConstants.spacingSmall),
                 Text(
-                  campeonato['descricao'],
+                  championship.description,
                   style: KTextStyle.cardSubtitleText,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: KConstants.spacingMedium),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.calendar_today,
-                      size: 16,
-                      color: KConstants.textSecondaryColor,
-                    ),
-                    const SizedBox(width: KConstants.spacingExtraSmall),
-                    Text(
-                      '${campeonato['dataInicio']} - ${campeonato['dataFim']}',
-                      style: KTextStyle.cardSubtitleText,
-                    ),
-                  ],
+
+                // Informações do campeonato
+                _buildInfoRow(Icons.location_on, championship.location),
+                const SizedBox(height: KConstants.spacingSmall),
+                _buildInfoRow(
+                  Icons.sports_soccer,
+                  championship.typeDisplayName,
                 ),
                 const SizedBox(height: KConstants.spacingSmall),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.location_on,
-                      size: 16,
-                      color: KConstants.textSecondaryColor,
-                    ),
-                    const SizedBox(width: KConstants.spacingExtraSmall),
-                    Expanded(
-                      child: Text(
-                        campeonato['local'],
-                        style: KTextStyle.cardSubtitleText,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
+                _buildInfoRow(
+                  Icons.how_to_reg,
+                  championship.registrationTypeDisplayName,
                 ),
                 const SizedBox(height: KConstants.spacingSmall),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.people,
-                      size: 16,
-                      color: KConstants.textSecondaryColor,
-                    ),
-                    const SizedBox(width: KConstants.spacingExtraSmall),
-                    Text(
-                      '${campeonato['inscritos']}/${campeonato['vagas']} inscritos',
-                      style: KTextStyle.cardSubtitleText,
-                    ),
-                    const Spacer(),
-                    Text(
-                      campeonato['preco'],
-                      style: KTextStyle.cardTitleText.copyWith(
-                        color: KConstants.primaryColor,
-                        fontSize: KConstants.fontSizeMedium,
-                      ),
-                    ),
-                  ],
+                _buildInfoRow(
+                  Icons.people,
+                  'Máximo: ${championship.maxTeams} times',
                 ),
-                const SizedBox(height: KConstants.spacingMedium),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: temVagas
-                        ? () => _showSignupDialog(campeonato)
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: temVagas
-                          ? KConstants.primaryColor
-                          : Colors.grey,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: KConstants.spacingSmall,
+
+                if (championship.registrationFee != null) ...[
+                  const SizedBox(height: KConstants.spacingSmall),
+                  _buildInfoRow(
+                    Icons.attach_money,
+                    'R\$ ${championship.registrationFee!.toStringAsFixed(2)}',
+                    color: Colors.green[600],
+                  ),
+                ],
+
+                // Datas
+                if (championship.startDate != null ||
+                    championship.endDate != null) ...[
+                  const SizedBox(height: KConstants.spacingMedium),
+                  Container(
+                    padding: const EdgeInsets.all(KConstants.spacingSmall),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      borderRadius: BorderRadius.circular(
+                        KConstants.borderRadiusSmall,
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          KConstants.borderRadiusMedium,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today,
+                          size: 16,
+                          color: Colors.blue[600],
                         ),
-                      ),
-                    ),
-                    child: Text(
-                      temVagas ? 'Inscrever-se' : 'Vagas Esgotadas',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                        const SizedBox(width: KConstants.spacingSmall),
+                        Expanded(
+                          child: Text(
+                            _formatDateRange(
+                              championship.startDate,
+                              championship.endDate,
+                            ),
+                            style: KTextStyle.smallText.copyWith(
+                              color: Colors.blue[600],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
+                ],
+
+                const SizedBox(height: KConstants.spacingLarge),
+
+                // Botões de inscrição baseados no tipo do campeonato
+                if (championship.canRegisterTeams &&
+                    championship.canRegisterIndividuals) ...[
+                  // Ambos os tipos permitidos
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () => _goToRegistration(
+                            championship,
+                            RegistrationType.teamOnly,
+                          ),
+                          icon: const Icon(Icons.group),
+                          label: const Text('Inscrever Time'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: KConstants.primaryColor,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: KConstants.spacingSmall),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _goToRegistration(
+                            championship,
+                            RegistrationType.individualPairing,
+                          ),
+                          icon: const Icon(Icons.person),
+                          label: const Text('Inscrever Individual'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: KConstants.primaryColor,
+                            side: BorderSide(color: KConstants.primaryColor),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ] else if (championship.canRegisterTeams) ...[
+                  // Apenas times
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _goToRegistration(
+                        championship,
+                        RegistrationType.teamOnly,
+                      ),
+                      icon: const Icon(Icons.group),
+                      label: const Text('Inscrever Time'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: KConstants.primaryColor,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ),
+                ] else if (championship.canRegisterIndividuals) ...[
+                  // Apenas individuais
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _goToRegistration(
+                        championship,
+                        RegistrationType.individualPairing,
+                      ),
+                      icon: const Icon(Icons.person),
+                      label: const Text('Inscrever Individual'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: KConstants.primaryColor,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ),
+                ] else ...[
+                  // Nenhum tipo permitido
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => ChampionshipDetailsPage(
+                                  championship: championship,
+                                ),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.visibility),
+                          label: const Text('Ver Detalhes'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
@@ -537,61 +667,100 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _showSignupDialog(Map<String, dynamic> campeonato) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Inscrever-se em ${campeonato['titulo']}'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Categoria: ${campeonato['categoria']}'),
-              Text(
-                'Período: ${campeonato['dataInicio']} - ${campeonato['dataFim']}',
-              ),
-              Text('Local: ${campeonato['local']}'),
-              Text('Valor: ${campeonato['preco']}'),
-              const SizedBox(height: KConstants.spacingMedium),
-              const Text(
-                'Deseja confirmar sua inscrição?',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _confirmSignup(campeonato);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: KConstants.primaryColor,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Confirmar'),
-            ),
-          ],
-        );
-      },
+  Widget _buildStatusChip(ChampionshipStatus status) {
+    Color color;
+    String text;
+
+    switch (status) {
+      case ChampionshipStatus.published:
+        color = Colors.blue;
+        text = 'PUBLICADO';
+        break;
+      case ChampionshipStatus.registrationOpen:
+        color = Colors.green;
+        text = 'INSCRIÇÕES ABERTAS';
+        break;
+      case ChampionshipStatus.registrationClosed:
+        color = Colors.orange;
+        text = 'INSCRIÇÕES FECHADAS';
+        break;
+      case ChampionshipStatus.ongoing:
+        color = Colors.purple;
+        text = 'EM ANDAMENTO';
+        break;
+      case ChampionshipStatus.finished:
+        color = Colors.teal;
+        text = 'FINALIZADO';
+        break;
+      default:
+        color = Colors.grey;
+        text = status.name.toUpperCase();
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: KConstants.spacingSmall,
+        vertical: KConstants.spacingExtraSmall,
+      ),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(KConstants.borderRadiusSmall),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 
-  void _confirmSignup(Map<String, dynamic> campeonato) {
-    setState(() {
-      campeonato['inscritos'] = campeonato['inscritos'] + 1;
-    });
+  Widget _buildInfoRow(IconData icon, String text, {Color? color}) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: color ?? KConstants.textSecondaryColor),
+        const SizedBox(width: KConstants.spacingExtraSmall),
+        Expanded(
+          child: Text(
+            text,
+            style: KTextStyle.cardSubtitleText.copyWith(color: color),
+          ),
+        ),
+      ],
+    );
+  }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Inscrição confirmada em ${campeonato['titulo']}!'),
-        backgroundColor: KConstants.successColor,
-        duration: const Duration(seconds: 3),
+  String _formatDateRange(DateTime? startDate, DateTime? endDate) {
+    if (startDate == null && endDate == null) return '';
+
+    if (startDate != null && endDate != null) {
+      if (startDate.day == endDate.day &&
+          startDate.month == endDate.month &&
+          startDate.year == endDate.year) {
+        return '${startDate.day}/${startDate.month}/${startDate.year}';
+      }
+      return '${startDate.day}/${startDate.month}/${startDate.year} - ${endDate.day}/${endDate.month}/${endDate.year}';
+    }
+
+    if (startDate != null) {
+      return 'Início: ${startDate.day}/${startDate.month}/${startDate.year}';
+    }
+
+    return 'Fim: ${endDate!.day}/${endDate.month}/${endDate.year}';
+  }
+
+  void _goToRegistration(
+    Championship championship,
+    RegistrationType registrationType,
+  ) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ChampionshipRegistrationPage(
+          championship: championship,
+          registrationType: registrationType,
+        ),
       ),
     );
   }

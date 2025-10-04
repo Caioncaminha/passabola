@@ -59,25 +59,17 @@
 
       // ---- Coleção de Times ----
       match /teams/{teamId} {
-        // Qualquer usuário autenticado pode ler times ativos
-        allow read: if request.auth != null && 
-                      (resource.data.status == 'active' || 
-                      request.auth.uid == resource.data.captainId ||
-                      isAdmin() ||
-                      isTeamMember(teamId));
+        // Qualquer usuário autenticado pode ler times
+        allow read: if request.auth != null;
         
-        // Apenas usuários autenticados podem criar times (solicitações)
+        // Apenas usuários autenticados podem criar times
         allow create: if request.auth != null && 
-                        request.resource.data.captainId == request.auth.uid &&
-                        request.resource.data.status == 'pending' &&
-                        validateTeamData();
+                        request.resource.data.captainId == request.auth.uid;
         
         // Capitão e admin podem atualizar o time
-        // Usuários podem atualizar apenas quando aceitam convites (adicionar membros)
         allow update: if request.auth != null && 
                         (request.auth.uid == resource.data.captainId || 
-                         isAdmin() ||
-                         isAddingMember());
+                         isAdmin());
         
         // Apenas o capitão pode deletar o time
         allow delete: if request.auth != null && request.auth.uid == resource.data.captainId;
@@ -103,6 +95,96 @@
         allow delete: if request.auth != null && 
                         (request.auth.uid == resource.data.invitedByUserId ||
                          isAdminOrScout());
+      }
+
+      // ---- Coleção de Campeonatos ----
+      match /championships/{championshipId} {
+        // Qualquer usuário autenticado pode ler campeonatos
+        // A filtragem por status será feita no código da aplicação
+        allow read: if request.auth != null;
+        
+        // Apenas admins podem criar campeonatos
+        allow create: if request.auth != null && 
+                        isAdmin() &&
+                        validateChampionshipData();
+        
+        // Apenas admins e organizador podem atualizar campeonatos
+        allow update: if request.auth != null && 
+                        (isAdmin() || request.auth.uid == resource.data.organizerId) &&
+                        validateChampionshipData();
+        
+        // Apenas admins podem deletar campeonatos
+        allow delete: if request.auth != null && isAdmin();
+      }
+
+      // ---- Coleção de Inscrições em Campeonatos ----
+      match /championship_registrations/{registrationId} {
+        // Usuários podem ler suas próprias inscrições, admins podem ler todas
+        allow read: if request.auth != null;
+        
+        // Usuários autenticados podem se inscrever
+        allow create: if request.auth != null;
+        
+        // Usuários podem atualizar suas inscrições
+        allow update: if request.auth != null;
+        
+        // Usuários podem deletar suas inscrições
+        allow delete: if request.auth != null;
+      }
+
+      // ---- Coleção de Check-ins de Times ----
+      match /team_checkins/{checkinId} {
+        // Capitães podem ler check-ins de seus times, admins podem ler todos
+        allow read: if request.auth != null && 
+                      (request.auth.uid == resource.data.captainId || isAdmin());
+        
+        // Apenas capitães podem fazer check-in de seus times
+        allow create: if request.auth != null && 
+                        request.resource.data.captainId == request.auth.uid &&
+                        validateTeamCheckinData();
+        
+        // Apenas capitães podem atualizar check-ins de seus times, admins podem atualizar todos
+        allow update: if request.auth != null && 
+                        (request.auth.uid == resource.data.captainId || isAdmin());
+        
+        // Apenas capitães podem deletar check-ins de seus times, admins podem deletar todos
+        allow delete: if request.auth != null && 
+                        (request.auth.uid == resource.data.captainId || isAdmin());
+      }
+
+      // ---- Coleção de Check-ins Individuais ----
+      match /individual_checkins/{checkinId} {
+        // Usuários podem ler seus próprios check-ins, admins podem ler todos
+        allow read: if request.auth != null && 
+                      (request.auth.uid == resource.data.userId || isAdmin());
+        
+        // Usuários autenticados podem fazer check-in individual
+        allow create: if request.auth != null && 
+                        request.resource.data.userId == request.auth.uid &&
+                        validateIndividualCheckinData();
+        
+        // Usuários podem atualizar seus próprios check-ins, admins podem atualizar todos
+        allow update: if request.auth != null && 
+                        (request.auth.uid == resource.data.userId || isAdmin());
+        
+        // Usuários podem deletar seus próprios check-ins, admins podem deletar todos
+        allow delete: if request.auth != null && 
+                        (request.auth.uid == resource.data.userId || isAdmin());
+      }
+
+      // ---- Coleção de Times Gerados ----
+      match /generated_teams/{teamId} {
+        // Qualquer usuário autenticado pode ler times gerados
+        allow read: if request.auth != null;
+        
+        // Apenas admins podem criar times gerados (via sistema)
+        allow create: if request.auth != null && isAdmin();
+        
+        // Apenas admins podem atualizar times gerados
+        allow update: if request.auth != null && isAdmin();
+        
+        // Apenas admins podem deletar times gerados
+        allow delete: if request.auth != null && isAdmin();
       }
 
       // ---- Funções auxiliares ----
@@ -181,6 +263,72 @@
               (request.resource.data.isAccepted != request.resource.data.isRejected) &&
               // Se aceito, deve ter invitedUserId
               (request.resource.data.isAccepted == false || request.resource.data.invitedUserId is string);
+      }
+
+      function validateChampionshipData() {
+        return request.resource.data.keys().hasAll([
+          'title', 'description', 'location', 'createdAt', 'updatedAt', 
+          'status', 'type', 'registrationType', 'maxTeams', 'minPlayersPerTeam', 
+          'maxPlayersPerTeam', 'rules', 'prizes', 'organizerId', 'organizerName'
+        ]) &&
+        request.resource.data.title is string &&
+        request.resource.data.description is string &&
+        request.resource.data.location is string &&
+        request.resource.data.createdAt is timestamp &&
+        request.resource.data.updatedAt is timestamp &&
+        request.resource.data.status in ['draft', 'published', 'registrationOpen', 'registrationClosed', 'ongoing', 'finished', 'cancelled'] &&
+        request.resource.data.type in ['knockout', 'league', 'groups', 'friendly'] &&
+        request.resource.data.registrationType in ['teamOnly', 'individualPairing', 'mixed'] &&
+        request.resource.data.maxTeams is int &&
+        request.resource.data.minPlayersPerTeam is int &&
+        request.resource.data.maxPlayersPerTeam is int &&
+        request.resource.data.rules is list &&
+        request.resource.data.prizes is list &&
+        request.resource.data.organizerId is string &&
+        request.resource.data.organizerName is string;
+      }
+
+      function validateRegistrationData() {
+        return request.resource.data.keys().hasAll([
+          'championshipId', 'userId', 'userEmail', 'userName', 'registeredAt', 'isConfirmed', 'isPaid'
+        ]) &&
+        request.resource.data.championshipId is string &&
+        request.resource.data.userId is string &&
+        request.resource.data.userEmail is string &&
+        request.resource.data.userName is string &&
+        request.resource.data.registeredAt is timestamp &&
+        request.resource.data.isConfirmed is bool &&
+        request.resource.data.isPaid is bool;
+      }
+
+      function validateTeamCheckinData() {
+        return request.resource.data.keys().hasAll([
+          'championshipId', 'teamId', 'teamName', 'captainId', 'captainName', 
+          'players', 'checkInTime', 'status'
+        ]) &&
+        request.resource.data.championshipId is string &&
+        request.resource.data.teamId is string &&
+        request.resource.data.teamName is string &&
+        request.resource.data.captainId is string &&
+        request.resource.data.captainName is string &&
+        request.resource.data.players is list &&
+        request.resource.data.checkInTime is timestamp &&
+        request.resource.data.status in ['pending', 'confirmed', 'cancelled', 'noShow'];
+      }
+
+      function validateIndividualCheckinData() {
+        return request.resource.data.keys().hasAll([
+          'championshipId', 'userId', 'userName', 'userEmail', 'preferredPosition', 
+          'skillLevel', 'checkInTime', 'status'
+        ]) &&
+        request.resource.data.championshipId is string &&
+        request.resource.data.userId is string &&
+        request.resource.data.userName is string &&
+        request.resource.data.userEmail is string &&
+        request.resource.data.preferredPosition is string &&
+        request.resource.data.skillLevel in ['beginner', 'intermediate', 'advanced'] &&
+        request.resource.data.checkInTime is timestamp &&
+        request.resource.data.status in ['pending', 'confirmed', 'cancelled', 'noShow'];
       }
     }
   }

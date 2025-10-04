@@ -48,16 +48,30 @@
   // ]
   "indexes": [
     {
-      "collectionGroup": "articles",
+      "collectionGroup": "championship_registrations",
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "isPublished",
+          "fieldPath": "userId",
           "mode": "ASCENDING"
         },
         {
-          "fieldPath": "tags",
-          "arrayConfig": "CONTAINS"
+          "fieldPath": "registeredAt",
+          "mode": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "championship_registrations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "championshipId",
+          "mode": "ASCENDING"
+        },
+        {
+          "fieldPath": "registeredAt",
+          "mode": "ASCENDING"
         }
       ]
     }

@@ -15,6 +15,8 @@ import 'teams_page.dart';
 import 'team_invites_page.dart';
 import 'team_create_page.dart';
 import 'team_details_page.dart';
+import 'my_championships_page.dart';
+import 'championships_page.dart';
 
 class PerfilPage extends StatefulWidget {
   const PerfilPage({super.key});
@@ -549,6 +551,22 @@ class _PerfilPageState extends State<PerfilPage> {
                   title: 'Convites de Times',
                   subtitle: 'Ver convites recebidos',
                   onTap: () => _navigateToTeamInvites(),
+                ),
+                SizedBox(height: KConstants.spacingLarge),
+
+                _buildActionButton(
+                  icon: Icons.emoji_events,
+                  title: 'Meus Campeonatos',
+                  subtitle: 'Ver campeonatos em que estou inscrito',
+                  onTap: () => _navigateToMyChampionships(),
+                ),
+                SizedBox(height: KConstants.spacingLarge),
+
+                _buildActionButton(
+                  icon: Icons.sports_soccer,
+                  title: 'Todos os Campeonatos',
+                  subtitle: 'Ver e inscrever-se em campeonatos',
+                  onTap: () => _navigateToAllChampionships(),
                 ),
                 SizedBox(height: KConstants.spacingLarge),
 
@@ -1261,6 +1279,18 @@ class _PerfilPageState extends State<PerfilPage> {
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (context) => const TeamCreatePage()));
+  }
+
+  void _navigateToMyChampionships() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const MyChampionshipsPage()),
+    );
+  }
+
+  void _navigateToAllChampionships() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const ChampionshipsPage()));
   }
 
   void _showSettingsDialog() {
