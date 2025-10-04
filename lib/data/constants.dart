@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'team_service.dart';
+import 'team_model.dart';
 
 class KConstants {
   static const String themeModeKey = 'themeModeKey';
@@ -33,11 +36,15 @@ class KConstants {
   static const double fontSizeExtraLargeHeading = 32.0;
 
   // Espaçamentos
+  static const double spacingXSmall = 4.0;
   static const double spacingExtraSmall = 4.0;
   static const double spacingSmall = 8.0;
   static const double spacingMedium = 16.0;
   static const double spacingLarge = 24.0;
   static const double spacingExtraLarge = 32.0;
+
+  // Cores de borda
+  static const Color borderColor = Color(0xFFE0E0E0);
 
   // Bordas
   static const double borderRadiusSmall = 4.0;
@@ -203,6 +210,25 @@ class KTextStyle {
     color: KConstants.textPrimaryColor,
     fontSize: KConstants.fontSizeMedium,
   );
+
+  // Títulos de seção
+  static const TextStyle heading1 = TextStyle(
+    color: KConstants.textPrimaryColor,
+    fontSize: KConstants.fontSizeExtraLargeHeading,
+    fontWeight: FontWeight.bold,
+  );
+
+  static const TextStyle heading2 = TextStyle(
+    color: KConstants.textPrimaryColor,
+    fontSize: KConstants.fontSizeLargeHeading,
+    fontWeight: FontWeight.bold,
+  );
+
+  static const TextStyle heading3 = TextStyle(
+    color: KConstants.textPrimaryColor,
+    fontSize: KConstants.fontSizeHeading,
+    fontWeight: FontWeight.bold,
+  );
 }
 
 class KDecoration {
@@ -212,7 +238,7 @@ class KDecoration {
     borderRadius: BorderRadius.circular(KConstants.borderRadiusMedium),
     boxShadow: [
       BoxShadow(
-        color: Colors.black.withOpacity(0.1),
+        color: Colors.black.withValues(alpha: 0.1),
         blurRadius: 4,
         offset: const Offset(0, 2),
       ),
@@ -224,7 +250,7 @@ class KDecoration {
     borderRadius: BorderRadius.circular(KConstants.borderRadiusLarge),
     boxShadow: [
       BoxShadow(
-        color: Colors.black.withOpacity(0.08),
+        color: Colors.black.withValues(alpha: 0.08),
         blurRadius: 8,
         offset: const Offset(0, 4),
       ),
@@ -234,7 +260,7 @@ class KDecoration {
   static BoxDecoration inputDecoration = BoxDecoration(
     color: KConstants.backgroundColor,
     borderRadius: BorderRadius.circular(KConstants.borderRadiusMedium),
-    border: Border.all(color: KConstants.surfaceColor.withOpacity(0.3)),
+    border: Border.all(color: KConstants.surfaceColor.withValues(alpha: 0.3)),
   );
 
   static BoxDecoration buttonDecoration = BoxDecoration(
@@ -271,11 +297,15 @@ class KInputDecoration {
       fillColor: KConstants.backgroundColor,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(KConstants.borderRadiusMedium),
-        borderSide: BorderSide(color: KConstants.surfaceColor.withOpacity(0.3)),
+        borderSide: BorderSide(
+          color: KConstants.surfaceColor.withValues(alpha: 0.3),
+        ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(KConstants.borderRadiusMedium),
-        borderSide: BorderSide(color: KConstants.surfaceColor.withOpacity(0.3)),
+        borderSide: BorderSide(
+          color: KConstants.surfaceColor.withValues(alpha: 0.3),
+        ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(KConstants.borderRadiusMedium),
@@ -290,5 +320,60 @@ class KInputDecoration {
         vertical: KConstants.spacingMedium,
       ),
     );
+  }
+}
+
+/// Classe utilitária para funções relacionadas a times
+class TeamUtils {
+  /// Verifica se o usuário atual está em algum time
+  /// Retorna true se o usuário estiver em um time, false caso contrário
+  static Future<bool> isUserInTeam() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return false;
+
+      final userTeams = await TeamService.getUserTeams(user.uid).first;
+      return userTeams.isNotEmpty;
+    } catch (e) {
+      print('Erro ao verificar se usuário está em time: $e');
+      return false;
+    }
+  }
+
+  /// Verifica se o usuário atual está em algum time e retorna o ID do time
+  /// Retorna o ID do primeiro time encontrado ou null se não estiver em nenhum time
+  static Future<String?> getUserTeamId() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return null;
+
+      final userTeams = await TeamService.getUserTeams(user.uid).first;
+      return userTeams.isNotEmpty ? userTeams.first.id : null;
+    } catch (e) {
+      print('Erro ao obter ID do time do usuário: $e');
+      return null;
+    }
+  }
+
+  /// Verifica se o usuário atual está em algum time e retorna o objeto Team
+  /// Retorna o primeiro time encontrado ou null se não estiver em nenhum time
+  static Future<Team?> getUserTeam() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return null;
+
+      final userTeams = await TeamService.getUserTeams(user.uid).first;
+      return userTeams.isNotEmpty ? userTeams.first : null;
+    } catch (e) {
+      print('Erro ao obter time do usuário: $e');
+      return null;
+    }
+  }
+
+  /// Verifica se o usuário pode criar um novo time
+  /// Retorna true se o usuário não estiver em nenhum time, false caso contrário
+  static Future<bool> canUserCreateTeam() async {
+    final isInTeam = await isUserInTeam();
+    return !isInTeam;
   }
 }

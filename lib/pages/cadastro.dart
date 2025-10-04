@@ -57,6 +57,7 @@ class _CadastroPageState extends State<CadastroPage> {
           'email': email,
           'createdAt': FieldValue.serverTimestamp(),
           'isRegistered': false,
+          'role': 'usuario',
         }, SetOptions(merge: true));
 
         if (!mounted) return;

@@ -7,7 +7,16 @@ import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:passaabola/pages/login_page.dart';
 import '../data/constants.dart';
+import '../data/team_service.dart';
+import '../data/team_model.dart';
 import 'dart:io';
+import '../data/auth_roles.dart';
+import 'teams_page.dart';
+import 'team_invites_page.dart';
+import 'team_create_page.dart';
+import 'team_details_page.dart';
+import 'my_championships_page.dart';
+import 'championships_page.dart';
 
 class PerfilPage extends StatefulWidget {
   const PerfilPage({super.key});
@@ -20,9 +29,12 @@ class _PerfilPageState extends State<PerfilPage> {
   final _emailController = TextEditingController();
   final _usernameController = TextEditingController();
   String? _userId; // UID do usuário atual
+  String? _userRole;
   bool _isLoading = false;
   bool _isRegistered = false;
   bool _isCheckingRegistration = true;
+  bool _isUserInTeam = false;
+  Team? _userTeam;
   Map<String, dynamic>? _userData; // Dados completos do usuário
   String? _profileImageUrl; // URL da foto de perfil
   bool _notificationsEnabled = true; // Configuração de notificações
@@ -39,9 +51,11 @@ class _PerfilPageState extends State<PerfilPage> {
     try {
       // Obter o UID do usuário atual do Firebase Auth
       final user = FirebaseAuth.instance.currentUser;
-
       if (user != null) {
         _userId = user.uid;
+        // Carrega role do usuário
+        final roleEnum = await RoleService().getCurrentUserRole();
+        _userRole = roleEnum.name;
 
         DocumentSnapshot userDoc = await FirebaseFirestore.instance
             .collection('jogadoras')
@@ -64,12 +78,16 @@ class _PerfilPageState extends State<PerfilPage> {
             _isCheckingRegistration = false;
           });
         }
+
+        // Verificar se o usuário está em um time
+        await _checkUserTeamStatus();
       } else {
         // Usuário não está logado, redirecionar para login
         setState(() {
           _isRegistered = false;
           _userData = null;
           _isCheckingRegistration = false;
+          _userRole = null;
         });
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const LoginPage()),
@@ -81,6 +99,27 @@ class _PerfilPageState extends State<PerfilPage> {
         _isRegistered = false;
         _userData = null;
         _isCheckingRegistration = false;
+        _userRole = null;
+      });
+    }
+  }
+
+  Future<void> _checkUserTeamStatus() async {
+    if (_userId == null) return;
+
+    try {
+      final isInTeam = await TeamUtils.isUserInTeam();
+      final userTeam = await TeamUtils.getUserTeam();
+
+      setState(() {
+        _isUserInTeam = isInTeam;
+        _userTeam = userTeam;
+      });
+    } catch (e) {
+      print('Error checking user team status: $e');
+      setState(() {
+        _isUserInTeam = false;
+        _userTeam = null;
       });
     }
   }
@@ -148,7 +187,7 @@ class _PerfilPageState extends State<PerfilPage> {
                     height: 200,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                     ),
                   ),
                 ),
@@ -160,7 +199,7 @@ class _PerfilPageState extends State<PerfilPage> {
                     height: 150,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                     ),
                   ),
                 ),
@@ -183,6 +222,7 @@ class _PerfilPageState extends State<PerfilPage> {
                                 size: 28,
                               ),
                             ),
+
                             IconButton(
                               onPressed: _logout,
                               icon: const Icon(
@@ -202,14 +242,16 @@ class _PerfilPageState extends State<PerfilPage> {
                             children: [
                               CircleAvatar(
                                 radius: 60,
-                                backgroundColor: Colors.white.withOpacity(0.2),
+                                backgroundColor: Colors.white.withValues(
+                                  alpha: 0.2,
+                                ),
                                 child: CircleAvatar(
                                   radius: 55,
                                   backgroundColor: Colors.white,
                                   child: CircleAvatar(
                                     radius: 50,
                                     backgroundColor: KConstants.primaryColor
-                                        .withOpacity(0.1),
+                                        .withValues(alpha: 0.1),
                                     backgroundImage: _profileImageUrl != null
                                         ? NetworkImage(_profileImageUrl!)
                                         : null,
@@ -269,7 +311,7 @@ class _PerfilPageState extends State<PerfilPage> {
                             vertical: KConstants.spacingSmall,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
@@ -353,19 +395,135 @@ class _PerfilPageState extends State<PerfilPage> {
                   icon: Icons.analytics,
                   title: 'Estatísticas',
                   children: [
-                    _buildInfoRow(
-                      'Método de Cadastro',
-                      _userData?['registrationMethod'] ?? 'Manual',
-                    ),
+                    _buildInfoRow('Papel', _userRole ?? 'Não informado'),
                     _buildInfoRow(
                       'Data de Cadastro',
                       _formatDate(_userData?['registrationDate']),
                     ),
                   ],
                 ),
+
+                SizedBox(height: KConstants.spacingLarge),
+
+                // Card de times
+                _buildInfoCard(
+                  icon: Icons.group,
+                  title: 'Meus Times',
+                  children: [
+                    _buildInfoRow('Status', 'Gerenciar times e convites'),
+                  ],
+                ),
               ],
             ),
           ),
+
+          // --- MEU TIME ---
+          if (_isUserInTeam && _userTeam != null) ...[
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: KConstants.spacingLarge),
+              padding: EdgeInsets.all(KConstants.spacingMedium),
+              decoration: BoxDecoration(
+                color: KConstants.primaryColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(
+                  KConstants.borderRadiusMedium,
+                ),
+                border: Border.all(
+                  color: KConstants.primaryColor.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.group,
+                        color: KConstants.primaryColor,
+                        size: 24,
+                      ),
+                      SizedBox(width: KConstants.spacingSmall),
+                      Text(
+                        'Meu Time',
+                        style: KTextStyle.heading3.copyWith(
+                          color: KConstants.primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: KConstants.spacingMedium),
+                  Row(
+                    children: [
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: KConstants.primaryColor.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(
+                            KConstants.borderRadiusSmall,
+                          ),
+                        ),
+                        child: _userTeam!.imageUrl != null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(
+                                  KConstants.borderRadiusSmall,
+                                ),
+                                child: Image.network(
+                                  _userTeam!.imageUrl!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Icon(
+                                      Icons.group,
+                                      color: KConstants.primaryColor,
+                                    );
+                                  },
+                                ),
+                              )
+                            : Icon(Icons.group, color: KConstants.primaryColor),
+                      ),
+                      SizedBox(width: KConstants.spacingMedium),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _userTeam!.name,
+                              style: KTextStyle.titleText.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: KConstants.spacingSmall),
+                            Text(
+                              'Capitão: ${_userTeam!.captainName}',
+                              style: KTextStyle.bodyText.copyWith(
+                                color: KConstants.textSecondaryColor,
+                              ),
+                            ),
+                            SizedBox(height: KConstants.spacingXSmall),
+                            Text(
+                              '${_userTeam!.currentMembersCount}/${_userTeam!.maxMembers} membros',
+                              style: KTextStyle.smallText.copyWith(
+                                color: KConstants.textSecondaryColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => _navigateToTeamDetails(_userTeam!),
+                        icon: Icon(
+                          Icons.arrow_forward_ios,
+                          color: KConstants.primaryColor,
+                          size: 20,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: KConstants.spacingLarge),
+          ],
 
           // --- MENU DE AÇÕES ---
           Padding(
@@ -378,21 +536,67 @@ class _PerfilPageState extends State<PerfilPage> {
                   subtitle: 'Atualizar suas informações',
                   onTap: () => _showEditProfileDialog(),
                 ),
-                SizedBox(height: KConstants.spacingMedium),
+                SizedBox(height: KConstants.spacingLarge),
+
                 _buildActionButton(
-                  icon: Icons.notifications,
-                  title: 'Notificações',
-                  subtitle: 'Gerenciar alertas',
-                  onTap: () {},
-                ),
-                SizedBox(height: KConstants.spacingMedium),
-                _buildActionButton(
-                  icon: Icons.privacy_tip,
-                  title: 'Privacidade',
-                  subtitle: 'Configurações de privacidade',
-                  onTap: () {},
+                  icon: Icons.group,
+                  title: 'Meus Times',
+                  subtitle: 'Ver times criados',
+                  onTap: () => _navigateToMyTeams(),
                 ),
                 SizedBox(height: KConstants.spacingLarge),
+
+                _buildActionButton(
+                  icon: Icons.mail,
+                  title: 'Convites de Times',
+                  subtitle: 'Ver convites recebidos',
+                  onTap: () => _navigateToTeamInvites(),
+                ),
+                SizedBox(height: KConstants.spacingLarge),
+
+                _buildActionButton(
+                  icon: Icons.emoji_events,
+                  title: 'Meus Campeonatos',
+                  subtitle: 'Ver campeonatos em que estou inscrito',
+                  onTap: () => _navigateToMyChampionships(),
+                ),
+                SizedBox(height: KConstants.spacingLarge),
+
+                _buildActionButton(
+                  icon: Icons.sports_soccer,
+                  title: 'Todos os Campeonatos',
+                  subtitle: 'Ver e inscrever-se em campeonatos',
+                  onTap: () => _navigateToAllChampionships(),
+                ),
+                SizedBox(height: KConstants.spacingLarge),
+
+                StreamBuilder<List<Team>>(
+                  stream: TeamService.getUserTeams(
+                    FirebaseAuth.instance.currentUser?.uid ?? '',
+                  ),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const SizedBox.shrink();
+                    }
+
+                    final userTeams = snapshot.data ?? [];
+                    final canCreate = userTeams.isEmpty;
+
+                    if (!canCreate) return const SizedBox.shrink();
+
+                    return Column(
+                      children: [
+                        _buildActionButton(
+                          icon: Icons.add,
+                          title: 'Criar Time',
+                          subtitle: 'Solicitar criação de novo time',
+                          onTap: () => _navigateToCreateTeam(),
+                        ),
+                        SizedBox(height: KConstants.spacingLarge),
+                      ],
+                    );
+                  },
+                ),
               ],
             ),
           ),
@@ -556,7 +760,7 @@ class _PerfilPageState extends State<PerfilPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -570,7 +774,7 @@ class _PerfilPageState extends State<PerfilPage> {
               Container(
                 padding: EdgeInsets.all(KConstants.spacingSmall),
                 decoration: BoxDecoration(
-                  color: KConstants.primaryColor.withOpacity(0.1),
+                  color: KConstants.primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(icon, color: KConstants.primaryColor, size: 20),
@@ -633,12 +837,12 @@ class _PerfilPageState extends State<PerfilPage> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: KConstants.primaryColor.withOpacity(0.2),
+            color: KConstants.primaryColor.withValues(alpha: 0.2),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -649,7 +853,7 @@ class _PerfilPageState extends State<PerfilPage> {
             Container(
               padding: EdgeInsets.all(KConstants.spacingMedium),
               decoration: BoxDecoration(
-                color: KConstants.primaryColor.withOpacity(0.1),
+                color: KConstants.primaryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: KConstants.primaryColor, size: 24),
@@ -701,6 +905,9 @@ class _PerfilPageState extends State<PerfilPage> {
 
   Future<void> _logout() async {
     try {
+      // Limpar cache de roles antes do logout
+      RoleService.clearAllCaches();
+
       await FirebaseAuth.instance.signOut();
       if (mounted) {
         Navigator.of(context).pushReplacement(
@@ -1050,6 +1257,42 @@ class _PerfilPageState extends State<PerfilPage> {
     }
   }
 
+  void _navigateToMyTeams() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const TeamsPage()));
+  }
+
+  void _navigateToTeamDetails(Team team) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => TeamDetailsPage(team: team)),
+    );
+  }
+
+  void _navigateToTeamInvites() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const TeamInvitesPage()));
+  }
+
+  void _navigateToCreateTeam() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const TeamCreatePage()));
+  }
+
+  void _navigateToMyChampionships() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const MyChampionshipsPage()),
+    );
+  }
+
+  void _navigateToAllChampionships() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const ChampionshipsPage()));
+  }
+
   void _showSettingsDialog() {
     showDialog(
       context: context,
@@ -1085,12 +1328,12 @@ class _RegistrationOptionCard extends StatelessWidget {
           color: KConstants.backgroundColor,
           borderRadius: BorderRadius.circular(KConstants.borderRadiusLarge),
           border: Border.all(
-            color: KConstants.primaryColor.withOpacity(0.3),
+            color: KConstants.primaryColor.withValues(alpha: 0.3),
             width: 2,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -1101,7 +1344,7 @@ class _RegistrationOptionCard extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(KConstants.spacingMedium),
               decoration: BoxDecoration(
-                color: KConstants.primaryColor.withOpacity(0.1),
+                color: KConstants.primaryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(
                   KConstants.borderRadiusMedium,
                 ),
@@ -1710,7 +1953,7 @@ class _QuizDialogState extends State<_QuizDialog> {
               SizedBox(height: KConstants.spacingSmall),
               LinearProgressIndicator(
                 value: (_currentQuestion + 1) / _totalQuestions,
-                backgroundColor: KConstants.surfaceColor.withOpacity(0.3),
+                backgroundColor: KConstants.surfaceColor.withValues(alpha: 0.3),
                 valueColor: AlwaysStoppedAnimation<Color>(
                   KConstants.primaryColor,
                 ),
@@ -2142,7 +2385,7 @@ class _SettingsDialog extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(KConstants.spacingLarge),
               decoration: BoxDecoration(
-                color: KConstants.primaryColor.withOpacity(0.1),
+                color: KConstants.primaryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
