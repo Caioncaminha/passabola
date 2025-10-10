@@ -12,7 +12,7 @@ Um aplicativo multiplataforma construído com Flutter (Dart) e Firebase com o ob
 - [Stack Tecnológica](#stack-tecnológica)
 - [Estrutura do Projeto](#estrutura-do-projeto)
 - [Como rodar localmente](#como-rodar-localmente)
-- [Demonstração (em breve)](#📱-demonstração-em-breve)
+- [Demonstração](#demonstração)
 - [Licença](#licença)
 - [Autores / Créditos](#autores--créditos)
 
