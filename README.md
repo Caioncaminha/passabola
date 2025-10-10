@@ -132,9 +132,13 @@ Notas:
 - Para iOS, é necessário macOS com Xcode instalado.
 - Caso o projeto utilize recursos da FlutterFire CLI, gere `lib/firebase_options.dart` com `flutterfire configure`.
 
-## Demonstração (em breve)
+## Demonstração
 
-Seções reservadas para capturas de tela, GIFs e vídeos serão adicionadas assim que estiverem disponíveis.
+<img src="web/assets/api.png" alt="api_image" width="217"/>
+<img src="web/assets/padmincampeonatos.png" alt="gerenciar_campeonatos" width="202"/>
+<img src="web/assets/gifdemonstracao.gif" alt="gerenciar_campeonatos" width="250"/>
+
+API de futebol feminino, gerenciar campeonatos (PAdmin), gif do app.
 
 ## Contribuição e Git Flow
 
