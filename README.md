@@ -134,8 +134,8 @@ Notas:
 
 ## Demonstração
 
-<img src="web/assets/api.png" alt="api_image" width="217"/>
-<img src="web/assets/padmincampeonatos.png" alt="gerenciar_campeonatos" width="202"/>
+<img src="web/assets/api.png" alt="api_image" width="200"/>
+<img src="web/assets/padmincampeonatos.png" alt="gerenciar_campeonatos" width="200"/>
 <img src="web/assets/gifdemonstracao.gif" alt="gerenciar_campeonatos" width="250"/>
 
 API de futebol feminino, gerenciar campeonatos (PAdmin), gif do app.
@@ -158,7 +158,7 @@ Dicas:
 
 ## Licença
 
-Este projeto está licenciado sob a Licença MIT. Consulte o arquivo `LICENSE` para o texto completo.
+Este projeto está licenciado sob a Licença MIT. Consulte [MIT License](https://mit-license.org/) para o texto completo.
 
 ---
 
