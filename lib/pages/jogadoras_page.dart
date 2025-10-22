@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../data/constants.dart';
 
 class JogadorasPage extends StatefulWidget {
   const JogadorasPage({super.key});
@@ -13,96 +14,88 @@ class _JogadorasPageState extends State<JogadorasPage> {
     const int numeroDeJogadoras = 5;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: KConstants.backgroundColor,
       body: Column(
         children: [
           // Campo de pesquisa
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            padding: EdgeInsets.fromLTRB(
+              KConstants.spacingMedium,
+              KConstants.spacingMedium,
+              KConstants.spacingMedium,
+              KConstants.spacingSmall,
+            ),
             child: TextField(
-              decoration: InputDecoration(
+              decoration: KInputDecoration.textFieldDecoration(
                 hintText: "Pesquisar jogadora...",
-                hintStyle: const TextStyle(color: Color.fromARGB(255, 123, 143, 125)),
-                prefixIcon: const Icon(Icons.search, color: Color.fromARGB(255, 123, 143, 125)),
-                filled: true,
-                fillColor: const Color(0xFFF3EEF4),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: const BorderSide(color: Color.fromARGB(255, 201, 217, 201)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: const BorderSide(color: Color.fromARGB(255, 174, 209, 174), width: 2),
-                ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 15),
+                prefixIcon: Icons.search,
               ),
             ),
           ),
-          // Lista de jogadoras 
+          // Lista de jogadoras
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.only(top: 8),
+              padding: EdgeInsets.only(top: KConstants.spacingSmall),
               itemCount: numeroDeJogadoras,
               itemBuilder: (context, index) {
                 return Column(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: KConstants.spacingMedium,
+                        vertical: KConstants.spacingSmall,
+                      ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const CircleAvatar(
+                          CircleAvatar(
                             radius: 35,
-                            backgroundColor: Color(0xFFE0E0E0),
+                            backgroundColor: KConstants.surfaceColor
+                                .withOpacity(0.3),
                           ),
-                          const SizedBox(width: 16),
+                          SizedBox(width: KConstants.spacingMedium),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: const [
+                                  children: [
                                     Text(
                                       "NOME JOGADORA",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                        color: Colors.black,
-                                      ),
+                                      style: KTextStyle.cardTitleText,
                                     ),
                                     Text(
                                       "STATUS",
-                                      style: TextStyle(
+                                      style: KTextStyle.smallText.copyWith(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 10,
-                                        color: Colors.black,
                                       ),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 4),
-                                const Text(
+                                SizedBox(height: KConstants.spacingExtraSmall),
+                                Text(
                                   "TIME DA JOGADORA - POSIÇÃO",
-                                  style: TextStyle(fontSize: 12, color: Colors.black87),
+                                  style: KTextStyle.bodySecondaryText,
                                 ),
-                                const SizedBox(height: 8),
-                                const Text(
+                                SizedBox(height: KConstants.spacingSmall),
+                                Text(
                                   "DATA DE NASCIMENTO: 00/00/0000",
-                                  style: TextStyle(fontSize: 12, color: Colors.black54),
+                                  style: KTextStyle.smallText,
                                 ),
-                                const Text(
+                                Text(
                                   "CPF: 000.000.000-00",
-                                  style: TextStyle(fontSize: 12, color: Colors.black54),
+                                  style: KTextStyle.smallText,
                                 ),
-                                const Text(
+                                Text(
                                   "TEL: (00) 0 0000-0000",
-                                  style: TextStyle(fontSize: 12, color: Colors.black54),
+                                  style: KTextStyle.smallText,
                                 ),
-                                const Text(
+                                Text(
                                   "ENDEREÇO: Rua Nome Qualquer, 10A",
-                                  style: TextStyle(fontSize: 12, color: Colors.black54),
+                                  style: KTextStyle.smallText,
                                 ),
                               ],
                             ),
@@ -110,11 +103,11 @@ class _JogadorasPageState extends State<JogadorasPage> {
                         ],
                       ),
                     ),
-                    const Divider(
-                      height: 16,
+                    Divider(
+                      height: KConstants.spacingMedium,
                       thickness: 1,
-                      indent: 16,
-                      endIndent: 16,
+                      indent: KConstants.spacingMedium,
+                      endIndent: KConstants.spacingMedium,
                     ),
                   ],
                 );
