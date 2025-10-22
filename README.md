@@ -172,4 +172,6 @@ Este projeto está licenciado sob a Licença MIT. Consulte [MIT License](https:/
 
 Projeto desenvolvido como parte da formação do primeiro ano de Engenharia de Software na FIAP
 
+O projeto foi descontinuado porém é liberado o uso para qualquer um.
+
 ---
